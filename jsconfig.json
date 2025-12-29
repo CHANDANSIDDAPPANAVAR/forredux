@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": false
+  },
+  "exclude": ["node_modules", "android", "ios"]
+}
