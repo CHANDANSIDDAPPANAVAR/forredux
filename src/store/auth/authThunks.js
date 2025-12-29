@@ -3,7 +3,7 @@ import { authStart, authSuccess, authLogout } from './authSlice';
 import { saveTokens, clearTokens } from './authStorage';
 import { CommonActions } from '@react-navigation/native';
 import { navigationRef } from '../../navigation/NavigationService';
-
+import api from '../../services/api';
 /* =====================================
    LOGIN THUNK
 ===================================== */
@@ -125,19 +125,29 @@ export const currentLogoutThunk = () => async (dispatch, getState) => {
    LOGOUT ALL DEVICES
 ===================================== */
 export const logoutAllThunk = () => async (dispatch, getState) => {
+  console.log('🟢 logoutAllThunk called');
+
   const { accessToken } = getState().auth;
+  console.log('🟢 accessToken exists:', !!accessToken);
 
   try {
     if (accessToken) {
+      console.log('🟡 Calling logout API...');
       await api.post(
         '/api/logout',
         {},
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
+      console.log('✅ Logout API success');
+    } else {
+      console.log('❌ No accessToken, API not called');
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    console.log('❌ Logout API error:', err?.message);
+    console.log('❌ error.response:', err?.response);
   } finally {
+    console.log('🔵 Running local logout cleanup');
+
     await AsyncStorage.clear();
     await clearTokens();
     dispatch(authLogout());
@@ -148,37 +158,46 @@ export const logoutAllThunk = () => async (dispatch, getState) => {
         routes: [{ name: 'Auth' }],
       }),
     );
+
+    console.log('🔴 Navigation reset to Auth');
   }
 };
 
 export const refreshTokenThunk = () => async (dispatch, getState) => {
-  const { refreshToken, sessionId } = getState().auth;
+  const { refreshToken, sessionId, isAuthenticated } = getState().auth;
 
-  if (!refreshToken || !sessionId) {
-    throw new Error('No refresh token');
+  // 🔒 Already logged out → do nothing
+  if (!isAuthenticated || !refreshToken || !sessionId) {
+    dispatch(authLogout());
+    return null; // ✅ NO rejection
   }
 
-  const res = await api.post('/api/refresh', {
-    refreshToken,
-    sessionId,
-  });
+  try {
+    const res = await api.post('/api/refresh', {
+      refreshToken,
+      sessionId,
+    });
 
-  const { accessToken, refreshToken: newRefresh } = res.data;
+    const { accessToken, refreshToken: newRefresh } = res.data;
 
-  const updated = {
-    ...getState().auth,
-    accessToken,
-    refreshToken: newRefresh || refreshToken,
-  };
+    const updated = {
+      ...getState().auth,
+      accessToken,
+      refreshToken: newRefresh || refreshToken,
+    };
 
-  await saveTokens(updated);
+    await saveTokens(updated);
 
-  dispatch(
-    authSuccess({
-      accessToken: updated.accessToken,
-      refreshToken: updated.refreshToken,
-    }),
-  );
+    dispatch(
+      authSuccess({
+        accessToken: updated.accessToken,
+        refreshToken: updated.refreshToken,
+      }),
+    );
 
-  return accessToken; // IMPORTANT
+    return accessToken;
+  } catch {
+    dispatch(authLogout());
+    return null; // ✅ NO rejection
+  }
 };

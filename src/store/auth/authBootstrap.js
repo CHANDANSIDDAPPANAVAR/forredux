@@ -1,18 +1,14 @@
-import { authStart, authSuccess, authLogout } from './authSlice';
+import { authStart, authSuccess, authFinish } from './authSlice';
 import { loadTokens } from './authStorage';
 
-/* =====================================
-   BOOTSTRAP AUTH (APP START)
-===================================== */
 export const bootstrapAuth = () => async dispatch => {
   dispatch(authStart());
 
   try {
     const stored = await loadTokens();
 
-    if (!stored || !stored.accessToken || !stored.sessionId) {
-      // no valid session stored
-      dispatch(authLogout());
+    if (!stored) {
+      dispatch(authFinish()); // 🔑 stop loading
       return;
     }
 
@@ -29,7 +25,6 @@ export const bootstrapAuth = () => async dispatch => {
       }),
     );
   } catch (err) {
-    console.error('BOOTSTRAP AUTH ERROR:', err.message);
-    dispatch(authLogout());
+    dispatch(authFinish());
   }
 };

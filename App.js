@@ -7,13 +7,13 @@ import { StatusBar } from 'react-native';
 import { bootstrapAuth } from './src/store/auth/authBootstrap';
 import RootNavigator from './src/components/navigation/RootNavigator';
 import { store } from './src/store';
-
+import { validateAuthThunk } from './src/store/auth/authValidateThunk';
 /* 🔁 Runs once on app start */
 function Bootstrapper({ children }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(bootstrapAuth());
+    dispatch(validateAuthThunk()); // 👈 REQUIRED
   }, [dispatch]);
 
   return children;
