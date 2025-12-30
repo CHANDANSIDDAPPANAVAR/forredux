@@ -26,7 +26,7 @@ function App() {
         <SafeAreaProvider>
           <StatusBar
             translucent
-            backgroundColor="#b40f0fff"
+            backgroundColor="#ffffffff"
             barStyle="dark-content"
           />
 

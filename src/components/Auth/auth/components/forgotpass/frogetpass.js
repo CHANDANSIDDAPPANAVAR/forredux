@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,72 +12,60 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Image,
-  Modal,
-  FlatList,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
-import countries from '../utlits/countries'; // Assuming same countries file
-import ConnectTypesScreen from '../utlits/ConnectTypesScreen';
-import api from '../../../../services/api';
+import { useNavigation } from '@react-navigation/native';
+
+import countries from '../utlits/countries';
 import CountryPickerModal from '../utlits/countrypicker';
-const {width, height} = Dimensions.get('window');
+import api from '../../../../../services/api';
+
+const { width } = Dimensions.get('window');
 
 const ForgotPasswordScreen = () => {
+  const navigation = useNavigation();
+
   const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [countryModalVisible, setCountryModalVisible] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState(countries[0]); // Default country
-  const navigation = useNavigation();
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
 
-  // Robust email validation regex
   const isEmail = text =>
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(text);
 
   const handleSendOtp = async () => {
-    const trimmedIdentifier = identifier.trim();
-    if (!trimmedIdentifier) {
-      setErrorMessage('Please enter an email or phone number');
+    const trimmed = identifier.trim();
+
+    if (!trimmed) {
+      setErrorMessage('Please enter your email or phone number');
       return;
     }
 
-    // Check if input resembles an email and validate it
-    if (trimmedIdentifier.includes('@')) {
-      if (!isEmail(trimmedIdentifier)) {
-        setErrorMessage('Please enter a valid email address');
-        return;
-      }
+    if (trimmed.includes('@') && !isEmail(trimmed)) {
+      setErrorMessage('Please enter a valid email address');
+      return;
     }
 
     setErrorMessage('');
-    try {
-      setLoading(true);
-      let finalIdentifier = trimmedIdentifier;
+    setLoading(true);
 
-      // Log the identifier type for debugging
-      const identifierType = isEmail(finalIdentifier) ? 'email' : 'phone';
-      console.log(`[Identifier]: ${finalIdentifier}, Type: ${identifierType}`);
+    try {
+      let finalIdentifier = trimmed;
 
       if (!isEmail(finalIdentifier)) {
-        // Treat as phone number — ensure it starts with a digit
         if (!/^\d/.test(finalIdentifier)) {
-          setErrorMessage('Phone number must start with a digit');
+          setErrorMessage('Phone number must contain digits only');
+          setLoading(false);
           return;
         }
         finalIdentifier = selectedCountry.code + finalIdentifier;
-        console.log(`[Normalized Phone]: ${finalIdentifier}`);
       }
 
-      console.log(`[Sending OTP Request]: ${finalIdentifier}`);
-      console.log(api);
       const res = await api.post('/api/send-reset-otp', {
         identifier: finalIdentifier,
       });
 
-      console.log('[API Response]:', res.data);
-
-      if (res.data.success) {
+      if (res.data?.success) {
         navigation.replace('VerifyResetOtpScreen', {
           identifier: finalIdentifier,
         });
@@ -85,281 +73,182 @@ const ForgotPasswordScreen = () => {
         setErrorMessage(res.data.message || 'Failed to send OTP');
       }
     } catch (err) {
-      console.error('[API Error]:', err.response?.data || err.message);
       setErrorMessage(err.response?.data?.message || 'Server error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCountrySelect = country => {
-    console.log('[Country Selected]:', country.label, country.dialCode);
-    setSelectedCountry(country);
-    setCountryModalVisible(false);
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={{flexGrow: 1}}
-          keyboardShouldPersistTaps="handled">
-          <View style={{flex: 1}}>
-            <View style={styles.header}>
-              <View style={styles.headerone}>
-                <Text style={styles.logoText}>YOU CONNECTRY</Text>
-                <Text style={styles.logosuText}>
-                  One Identity. Endless possibilities.
-                </Text>
-              </View>
-              <ConnectTypesScreen />
-              <View style={styles.headerone}>
-                <Text style={styles.headerTitle}>Forgot Password</Text>
-                <Text style={styles.headerSubtitle}>
-                  Enter your email or phone to reset your password
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.form}>
-              {errorMessage ? (
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              ) : null}
-
-              <View style={styles.identifierContainer}>
-                {!isEmail(identifier) && (
-                  <TouchableOpacity
-                    style={styles.countryPickerButton}
-                    onPress={() => setCountryModalVisible(true)}>
-                    <View style={styles.flagcont}>
-                      <Image
-                        source={selectedCountry.image}
-                        style={styles.flagIcon}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                )}
-
-                <TextInput
-                  placeholder="Email or Phone"
-                  value={identifier}
-                  onChangeText={text => {
-                    setIdentifier(text);
-                    if (errorMessage) {
-                      setErrorMessage('');
-                    }
-                  }}
-                  autoCapitalize="none"
-                  keyboardType="default"
-                  style={styles.identifierInput}
-                  placeholderTextColor="#888"
-                />
-              </View>
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleSendOtp}
-                disabled={loading}>
-                <Text style={styles.buttonText}>
-                  {loading ? 'Sending...' : 'Send OTP'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => navigation.replace('Login')}>
-                <Text style={styles.link}>Back to Login</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Country Picker Modal */}
-            <CountryPickerModal
-              visible={countryModalVisible}
-              onClose={() => setCountryModalVisible(false)}
-              onSelect={handleCountrySelect}
-            />
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Forgot Password</Text>
+            <Text style={styles.subtitle}>
+              Enter your email or phone number to reset your password
+            </Text>
           </View>
+
+          {/* FORM */}
+          <View style={styles.form}>
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
+
+            <View style={styles.identifierContainer}>
+              {!isEmail(identifier) && (
+                <TouchableOpacity
+                  style={styles.countryPickerButton}
+                  onPress={() => setCountryModalVisible(true)}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={selectedCountry.image}
+                    style={styles.flagIcon}
+                  />
+                </TouchableOpacity>
+              )}
+
+              <TextInput
+                placeholder="Email or Phone"
+                value={identifier}
+                onChangeText={setIdentifier}
+                autoCapitalize="none"
+                keyboardType="default"
+                style={styles.identifierInput}
+                placeholderTextColor="#98A2B3"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.primaryButton, loading && styles.disabledButton]}
+              onPress={handleSendOtp}
+              disabled={loading}
+            >
+              <Text style={styles.primaryButtonText}>
+                {loading ? 'Sending OTP...' : 'Send OTP'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.replace('Login')}>
+              <Text style={styles.link}>Back to Login</Text>
+            </TouchableOpacity>
+          </View>
+
+          <CountryPickerModal
+            visible={countryModalVisible}
+            onClose={() => setCountryModalVisible(false)}
+            onSelect={setSelectedCountry}
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
 
+export default ForgotPasswordScreen;
+
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
   },
+
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+
   header: {
-    width: '100%',
-    backgroundColor: '#6A11CB',
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-    paddingVertical: 30,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 5},
-    shadowRadius: 10,
-    elevation: 6,
+    marginBottom: 30,
   },
-  headerone: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
+
+  title: {
+    fontSize: width * 0.065,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#101828',
   },
-  logoText: {
-    color: 'white',
-    fontSize: 26,
-    fontFamily: 'Poppins-Bold',
-    marginBottom: 4,
-    lineHeight: 30,
-  },
-  logosuText: {
-    color: 'white',
-    fontSize: 18,
+
+  subtitle: {
+    fontSize: width * 0.038,
     fontFamily: 'Poppins-Regular',
-    marginBottom: 10,
-    lineHeight: 22,
+    color: '#667085',
     textAlign: 'center',
+    marginTop: 6,
   },
-  headerTitle: {
-    color: 'white',
-    fontSize: 28,
-    fontFamily: 'Poppins-Bold',
-    marginBottom: 5,
-    lineHeight: 32,
-  },
-  headerSubtitle: {
-    color: '#e0dfff',
-    fontFamily: 'Poppins-Regular',
-    fontSize: 16,
-    lineHeight: 20,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
+
   form: {
-    marginTop: 40,
-    width: '85%',
-    alignSelf: 'center',
-    paddingBottom: 50,
+    width: '100%',
   },
+
   identifierContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: 'white',
+    borderColor: '#E4E7EC',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
     marginBottom: 18,
+    paddingHorizontal: 12,
   },
+
   countryPickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginRight: 8,
   },
+
   flagIcon: {
-    width: 24,
-    height: 16,
-    marginRight: 4,
+    width: 28,
+    height: 18,
     resizeMode: 'contain',
   },
-  flagcont: {
-    backgroundColor: '#f9f9f9',
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  dialCodeText: {
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'Poppins-Regular',
-  },
+
   identifierInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
     fontFamily: 'Poppins-Regular',
+    color: '#101828',
     paddingVertical: 14,
   },
-  button: {
-    backgroundColor: '#8B46FF',
-    paddingVertical: 14,
-    borderRadius: 5,
+
+  primaryButton: {
+    backgroundColor: '#2F80ED',
+    paddingVertical: 16,
+    borderRadius: 28,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 8,
   },
-  buttonDisabled: {
-    backgroundColor: '#a688d8',
+
+  disabledButton: {
+    backgroundColor: '#9DBCF2',
   },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontFamily: 'Poppins-Bold',
+
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: width * 0.045,
+    fontFamily: 'Poppins-SemiBold',
   },
+
   link: {
-    marginTop: 18,
-    color: '#6A11CB',
-    fontSize: 15,
+    marginTop: 16,
+    color: '#2F80ED',
+    fontSize: width * 0.035,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
   },
+
   errorText: {
-    color: 'red',
+    color: '#D92D20',
     fontSize: 14,
     marginBottom: 10,
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
   },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    width: width * 0.8,
-    maxHeight: height * 0.4,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    elevation: 10,
-  },
-  Contylable: {
-    fontSize: 20,
-    fontFamily: 'Poppins-Bold',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-  },
-  countryOption: {
-    paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#ccc',
-  },
-  countryPickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  countryFlag: {
-    width: 24,
-    height: 16,
-    marginRight: 10,
-    resizeMode: 'contain',
-  },
-  countryOptionText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-  },
 });
-
-export default ForgotPasswordScreen;

@@ -24,7 +24,7 @@ const Header = () => {
   return (
     <SafeAreaView edges={['top']} style={styles.header}>
       <Image
-        source={require('../../assets/logo/TTyouconnectry.png')}
+        source={require('../../assets/oneconnetrylogo.png')}
         style={styles.logo}
       />
 

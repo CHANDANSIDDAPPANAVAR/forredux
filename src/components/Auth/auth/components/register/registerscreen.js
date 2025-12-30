@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,10 @@ import {
   Platform,
   Keyboard,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import countries from '../utlits/countries';
 import CountryPickerModal from '../utlits/countrypicker';
-import api from '../../../../services/api';
+import api from '../../../../../services/api';
 const MPRegistrationScreen = () => {
   const navigation = useNavigation();
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
@@ -132,18 +132,21 @@ const MPRegistrationScreen = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keybavdmain}>
+        style={styles.keybavdmain}
+      >
         <ScrollView
-          contentContainerStyle={{flexGrow: 1}}
-          keyboardShouldPersistTaps="handled">
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.container}>
-            <View style={styles.formContainer}>
+            <View style={styles.form}>
               {/* Country Picker */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Select Country</Text>
                 <TouchableOpacity
                   style={styles.countryButton}
-                  onPress={() => setModalVisible(true)}>
+                  onPress={() => setModalVisible(true)}
+                >
                   <View style={styles.countryPicker}>
                     <View style={styles.countryFlagCont}>
                       <Image
@@ -213,7 +216,8 @@ const MPRegistrationScreen = () => {
                     }}
                   />
                   <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}>
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
                     <Image
                       source={
                         showPassword
@@ -244,9 +248,8 @@ const MPRegistrationScreen = () => {
                     }}
                   />
                   <TouchableOpacity
-                    onPress={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }>
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
                     <Image
                       source={
                         showConfirmPassword
@@ -263,7 +266,8 @@ const MPRegistrationScreen = () => {
               <TouchableOpacity
                 style={styles.checkboxContainer}
                 onPress={toggleCheckbox}
-                activeOpacity={0.8}>
+                activeOpacity={0.8}
+              >
                 <Image
                   source={
                     isAgreed
@@ -276,7 +280,8 @@ const MPRegistrationScreen = () => {
                   I agree to the{' '}
                   <Text
                     style={styles.linkText}
-                    onPress={() => navigation.navigate('TermsAndConditions')}>
+                    onPress={() => navigation.navigate('TermsAndConditions')}
+                  >
                     Terms and Conditions
                   </Text>
                 </Text>
@@ -294,7 +299,8 @@ const MPRegistrationScreen = () => {
                   loading && styles.submitButtonDisabled,
                 ]}
                 onPress={handleRegister}
-                disabled={loading}>
+                disabled={loading}
+              >
                 <Text style={styles.submitButtonText}>
                   {loading ? 'Please wait...' : 'Continue'}
                 </Text>
@@ -317,140 +323,155 @@ const styles = StyleSheet.create({
   keybavdmain: {
     flex: 1,
   },
+
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 25,
-    paddingVertical: 50,
-    alignItems: 'center',
-    backgroundColor: 'white',
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+    backgroundColor: '#FFFFFF',
   },
-  formContainer: {
+
+  /* FORM */
+  form: {
     width: '100%',
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-    borderRadius: 10,
   },
+
   inputGroup: {
-    marginBottom: 15,
+    marginBottom: 18,
   },
+
   inputLabel: {
-    color: '#333',
+    color: '#101828',
     fontSize: 14,
-    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Poppins-Medium',
     marginBottom: 6,
-    paddingLeft: 6,
   },
+
   input: {
-    borderColor: '#ddd',
+    borderColor: '#E4E7EC',
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 14,
+    borderRadius: 10,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
-    backgroundColor: 'white',
-    color: 'black',
+    backgroundColor: '#FFFFFF',
+    color: '#101828',
   },
+
+  /* COUNTRY PICKER */
   countryButton: {
-    borderRadius: 5,
-    backgroundColor: 'white',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E4E7EC',
   },
+
   countryPicker: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
+
   countryFlagCont: {
-    backgroundColor: '#f5f5f5',
-    borderBottomLeftRadius: 5,
-    borderTopLeftRadius: 5,
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 12,
   },
+
   countryFlag: {
+    height: 22,
+    width: 22,
     resizeMode: 'contain',
-    height: 24,
-    width: 24,
   },
+
   countryText: {
-    marginLeft: 10,
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
-    color: '#333',
+    color: '#101828',
   },
+
+  /* PASSWORD */
   passwordInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    backgroundColor: 'white',
+    borderColor: '#E4E7EC',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
   },
+
   inputPass: {
     flex: 1,
-    height: 50,
-    paddingHorizontal: 15,
-    fontFamily: 'Poppins-Regular',
-    fontSize: 16,
-    color: 'black',
-  },
-  eyeIconImage: {
-    width: 24,
-    height: 24,
-    marginRight: 15,
-    tintColor: '#474141',
-  },
-  submitButton: {
-    backgroundColor: '#8B46FF',
     paddingVertical: 14,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#aaa',
-  },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontFamily: 'Poppins-Bold',
-  },
-  errorContainer: {
-    marginTop: 10,
-    textAlign: 'center',
-    color: 'red',
-    alignItems: 'center',
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 14,
+    paddingHorizontal: 16,
     fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
+    fontSize: 16,
+    color: '#101828',
   },
+
+  eyeIconImage: {
+    width: 22,
+    height: 22,
+    marginRight: 16,
+    tintColor: '#667085',
+  },
+
+  /* TERMS */
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 8,
   },
+
   checkboxImage: {
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
     marginRight: 10,
-    tintColor: 'rgb(0, 108, 249)',
+    tintColor: '#2F80ED',
   },
+
   checkboxText: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
-    color: '#333',
+    color: '#344054',
+    flex: 1,
   },
+
   linkText: {
-    color: 'rgb(0, 157, 255)',
-    fontSize: 14,
+    color: '#2F80ED',
     fontFamily: 'Poppins-Medium',
+  },
+
+  /* ERROR */
+  errorContainer: {
+    marginTop: 10,
+  },
+
+  errorText: {
+    color: '#D92D20',
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
     textAlign: 'center',
+  },
+
+  /* BUTTON */
+  submitButton: {
+    backgroundColor: '#2F80ED',
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+
+  submitButtonDisabled: {
+    backgroundColor: '#A4BCFD',
+  },
+
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
   },
 });
 

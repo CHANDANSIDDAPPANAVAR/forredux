@@ -1,21 +1,28 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
-import api from '../../../../services/api';
-const SetNewPasswordScreen = ({route, navigation}) => {
-  const {identifier, token} = route.params;
+import api from '../../../../../services/api';
+
+const SetNewPasswordScreen = ({ route, navigation }) => {
+  const { identifier, token } = route.params;
+
   const [newPass, setNewPass] = useState('');
   const [reNewPass, setReNewPass] = useState('');
   const [showNewPass, setShowNewPass] = useState(false);
   const [showReNewPass, setShowReNewPass] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const validatePassword = pass =>
     /^(?=.*[A-Za-z])(?=.*[0-9!@#$%^&*])[A-Za-z0-9!@#$%^&*]{6,14}$/.test(pass);
@@ -28,10 +35,13 @@ const SetNewPasswordScreen = ({route, navigation}) => {
 
     if (!validatePassword(newPass)) {
       setError(
-        'Password must be 6–14 characters and include alphabet and least one number or special character.',
+        'Password must be 6–14 characters and include letters and at least one number or special character.',
       );
       return;
     }
+
+    setError('');
+    setLoading(true);
 
     try {
       const res = await api.post('/api/reset-password', {
@@ -41,137 +51,196 @@ const SetNewPasswordScreen = ({route, navigation}) => {
       });
 
       if (res.data.success) {
-        Alert.alert('Success', 'Password has been reset successfully');
         navigation.replace('Login');
       } else {
         setError(res.data.message || 'Something went wrong. Try again.');
       }
     } catch (err) {
-      console.error('Error:', err.message);
       setError('Something went wrong. Try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.inputLabel}>New Password</Text>
-        <View style={styles.passwordInputContainer}>
-          <TextInput
-            style={styles.inputPass}
-            placeholder="Enter new password"
-            secureTextEntry={!showNewPass}
-            value={newPass}
-            onChangeText={setNewPass}
-          />
-          <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)}>
-            <Image
-              source={
-                showNewPass
-                  ? require('../../assets/pview.png')
-                  : require('../../assets/phide.png')
-              }
-              style={styles.eyeIconImage}
-            />
-          </TouchableOpacity>
-        </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Set New Password</Text>
+            <Text style={styles.subtitle}>
+              Create a strong password for your account
+            </Text>
+          </View>
 
-        <Text style={styles.inputLabel}>Re-enter New Password</Text>
-        <View style={styles.passwordInputContainer}>
-          <TextInput
-            style={styles.inputPass}
-            placeholder="Re-enter password"
-            secureTextEntry={!showReNewPass}
-            value={reNewPass}
-            onChangeText={setReNewPass}
-          />
-          <TouchableOpacity onPress={() => setShowReNewPass(!showReNewPass)}>
-            <Image
-              source={
-                showReNewPass
-                  ? require('../../assets/pview.png')
-                  : require('../../assets/phide.png')
-              }
-              style={styles.eyeIconImage}
-            />
-          </TouchableOpacity>
-        </View>
+          {/* FORM */}
+          <View style={styles.form}>
+            {/* NEW PASSWORD */}
+            <Text style={styles.inputLabel}>New Password</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter new password"
+                placeholderTextColor="#98A2B3"
+                secureTextEntry={!showNewPass}
+                value={newPass}
+                onChangeText={setNewPass}
+              />
+              <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)}>
+                <Image
+                  source={
+                    showNewPass
+                      ? require('../../assets/pview.png')
+                      : require('../../assets/phide.png')
+                  }
+                  style={styles.eyeIcon}
+                />
+              </TouchableOpacity>
+            </View>
 
-        {/* Error Message */}
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {/* CONFIRM PASSWORD */}
+            <Text style={styles.inputLabel}>Confirm New Password</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Re-enter password"
+                placeholderTextColor="#98A2B3"
+                secureTextEntry={!showReNewPass}
+                value={reNewPass}
+                onChangeText={setReNewPass}
+              />
+              <TouchableOpacity
+                onPress={() => setShowReNewPass(!showReNewPass)}
+              >
+                <Image
+                  source={
+                    showReNewPass
+                      ? require('../../assets/pview.png')
+                      : require('../../assets/phide.png')
+                  }
+                  style={styles.eyeIcon}
+                />
+              </TouchableOpacity>
+            </View>
 
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleSetPassword}>
-          <Text style={styles.submitButtonText}>Set New Password</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+            {/* ERROR */}
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+            {/* BUTTON */}
+            <TouchableOpacity
+              style={[styles.primaryButton, loading && styles.disabledButton]}
+              onPress={handleSetPassword}
+              disabled={loading}
+            >
+              <Text style={styles.primaryButtonText}>
+                {loading ? 'Updating...' : 'Update Password'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
+export default SetNewPasswordScreen;
+
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 25,
+    paddingHorizontal: 24,
+  },
+
+  header: {
     alignItems: 'center',
-    backgroundColor: 'white',
+    marginBottom: 30,
   },
-  formContainer: {
-    width: '100%',
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-    borderRadius: 10,
+
+  title: {
+    fontSize: 26,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#101828',
   },
-  inputLabel: {
-    color: '#333',
-    fontSize: 14,
-    marginBottom: 6,
-    paddingLeft: 6,
-  },
-  inputPass: {
-    flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    color: 'black',
+
+  subtitle: {
+    fontSize: 15,
     fontFamily: 'Poppins-Regular',
+    color: '#667085',
+    textAlign: 'center',
+    marginTop: 6,
   },
+
+  form: {
+    width: '100%',
+  },
+
+  inputLabel: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#344054',
+    marginBottom: 6,
+    marginLeft: 4,
+  },
+
   passwordInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    backgroundColor: 'white',
-    marginBottom: 15,
+    borderColor: '#E4E7EC',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    marginBottom: 18,
+    paddingHorizontal: 12,
   },
-  eyeIconImage: {
-    width: 24,
-    height: 24,
-    marginRight: 15,
-    tintColor: '#474141',
-  },
-  submitButton: {
-    backgroundColor: '#8B46FF',
-    paddingVertical: 14,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  submitButtonText: {
-    color: 'white',
+
+  input: {
+    flex: 1,
     fontSize: 16,
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Poppins-Regular',
+    color: '#101828',
+    paddingVertical: 14,
   },
+
+  eyeIcon: {
+    width: 22,
+    height: 22,
+    tintColor: '#667085',
+  },
+
+  primaryButton: {
+    backgroundColor: '#2F80ED',
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+
+  disabledButton: {
+    backgroundColor: '#9DBCF2',
+  },
+
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+  },
+
   errorText: {
-    color: 'red',
+    color: '#D92D20',
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
-    marginTop: 10,
+    marginBottom: 10,
   },
 });
-
-export default SetNewPasswordScreen;

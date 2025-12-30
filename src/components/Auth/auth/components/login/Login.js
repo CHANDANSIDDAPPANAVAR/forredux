@@ -17,7 +17,6 @@ import { useDispatch } from 'react-redux';
 import DeviceInfo from 'react-native-device-info';
 import { useNavigation } from '@react-navigation/native';
 
-import ConnectTypesScreen from '../utlits/ConnectTypesScreen';
 import countries from '../utlits/countries';
 import CountryPickerModal from '../utlits/countrypicker';
 import api from '../../../../../services/api';
@@ -69,7 +68,6 @@ export default function TLoginScreen() {
         user: { accountType, subscription, id, showinnearby, country },
       } = res.data;
 
-      // ✅ REDUX LOGIN (single source of truth)
       dispatch(
         loginThunk({
           accessToken,
@@ -102,253 +100,229 @@ export default function TLoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <View style={{ flex: 1 }}>
-              {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.headerContent}>
-                  <Text style={styles.logoText}>YOU CONNECTRY</Text>
-                  <Text style={styles.logoSubtitle}>
-                    One Identity. Infinite Possibilities.
-                  </Text>
-                </View>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            {/* ================= HEADER ================= */}
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Login</Text>
+              <Text style={styles.headerSubtitle}>
+                Welcome back to One Connectry
+              </Text>
+            </View>
 
-                <ConnectTypesScreen />
+            {/* ================= FORM ================= */}
+            <View style={styles.form}>
+              {errorMessage ? (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              ) : null}
 
-                <View style={styles.headerContent}>
-                  <Text style={styles.headerTitle}>Login to Your Account</Text>
-                  <Text style={styles.headerSubtitle}>Welcome back!</Text>
-                </View>
-              </View>
-
-              {/* Form */}
-              <View style={styles.form}>
-                {errorMessage ? (
-                  <Text style={styles.errorText}>{errorMessage}</Text>
-                ) : null}
-
-                <View style={styles.identifierContainer}>
-                  {!isEmail(identifier) && (
-                    <TouchableOpacity
-                      style={styles.countryPickerButton}
-                      onPress={() => setCountryModalVisible(true)}
-                    >
-                      <View style={styles.flagContainer}>
-                        <Image
-                          source={selectedCountry.image}
-                          style={styles.flagIcon}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  )}
-
-                  <TextInput
-                    placeholder="Email or Phone"
-                    value={identifier}
-                    onChangeText={setIdentifier}
-                    autoCapitalize="none"
-                    style={styles.identifierInput}
-                    placeholderTextColor="#888"
-                  />
-                </View>
-
-                <View style={styles.passwordWrapper}>
-                  <TextInput
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!passwordVisible}
-                    style={styles.input}
-                    placeholderTextColor="#888"
-                  />
+              {/* EMAIL / PHONE */}
+              <View style={styles.identifierContainer}>
+                {!isEmail(identifier) && (
                   <TouchableOpacity
-                    style={styles.eyeIcon}
-                    onPress={() => setPasswordVisible(!passwordVisible)}
+                    style={styles.countryPickerButton}
+                    onPress={() => setCountryModalVisible(true)}
                   >
                     <Image
-                      source={
-                        passwordVisible
-                          ? require('../../assets/pview.png')
-                          : require('../../assets/phide.png')
-                      }
-                      style={styles.eyeIconImage}
+                      source={selectedCountry.image}
+                      style={styles.flagIcon}
                     />
                   </TouchableOpacity>
-                </View>
+                )}
 
-                <TouchableOpacity
-                  style={styles.loginButton}
-                  onPress={handleLogin}
-                >
-                  <Text style={styles.loginButtonText}>Login</Text>
-                </TouchableOpacity>
+                <TextInput
+                  placeholder="Email or Phone"
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                  autoCapitalize="none"
+                  style={styles.identifierInput}
+                  placeholderTextColor="#98A2B3"
+                />
+              </View>
 
+              {/* PASSWORD */}
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  placeholder="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!passwordVisible}
+                  style={styles.input}
+                  placeholderTextColor="#98A2B3"
+                />
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('ForgotPassword')}
+                  style={styles.eyeIcon}
+                  onPress={() => setPasswordVisible(!passwordVisible)}
                 >
-                  <Text style={styles.link}>Forgot Password?</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('Registerscreen')}
-                >
-                  <Text style={styles.link}>
-                    Don't have an account? Register
-                  </Text>
+                  <Image
+                    source={
+                      passwordVisible
+                        ? require('../../assets/pview.png')
+                        : require('../../assets/phide.png')
+                    }
+                    style={styles.eyeIconImage}
+                  />
                 </TouchableOpacity>
               </View>
 
-              <CountryPickerModal
-                visible={countryModalVisible}
-                onClose={() => setCountryModalVisible(false)}
-                onSelect={handleCountrySelect}
-              />
+              {/* LOGIN BUTTON */}
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={handleLogin}
+              >
+                <Text style={styles.loginButtonText}>Login</Text>
+              </TouchableOpacity>
+
+              {/* LINKS */}
+              <TouchableOpacity
+                onPress={() => navigation.navigate('ForgotPassword')}
+              >
+                <Text style={styles.link}>Forgot Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Registerscreen')}
+              >
+                <Text style={styles.link}>
+                  Don&apos;t have an account? Register
+                </Text>
+              </TouchableOpacity>
             </View>
+
+            <CountryPickerModal
+              visible={countryModalVisible}
+              onClose={() => setCountryModalVisible(false)}
+              onSelect={handleCountrySelect}
+            />
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </View>
   );
 }
+
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
   },
+
+  /* HEADER */
   header: {
-    width: '100%',
-    backgroundColor: '#6A11CB',
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-    paddingVertical: 30,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 6,
+
+    paddingBottom: 30,
   },
-  headerContent: {
-    alignItems: 'center',
-  },
-  logoText: {
-    color: 'white',
-    fontSize: width * 0.065,
-    fontFamily: 'Poppins-Bold',
-    marginBottom: 4,
-    lineHeight: 32,
-  },
-  logoSubtitle: {
-    color: 'white',
-    fontSize: width * 0.04,
-    fontFamily: 'Poppins-Regular',
-    marginBottom: 10,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
+
   headerTitle: {
-    color: 'white',
-    fontSize: width * 0.07,
-    fontFamily: 'Poppins-Bold',
-    marginBottom: 5,
-    lineHeight: 32,
+    fontSize: width * 0.065,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#101828',
   },
+
   headerSubtitle: {
-    color: '#e0dfff',
+    fontSize: width * 0.038,
     fontFamily: 'Poppins-Regular',
-    fontSize: width * 0.04,
-    lineHeight: 22,
-    marginBottom: 20,
+    color: '#667085',
+    marginTop: 6,
   },
+
+  /* FORM */
   form: {
-    marginTop: 40,
     width: '85%',
     alignSelf: 'center',
-    paddingBottom: 50,
+    paddingBottom: 40,
   },
+
   identifierContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: 'white',
+    borderColor: '#E4E7EC',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
     marginBottom: 18,
+    paddingHorizontal: 12,
   },
+
   countryPickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginRight: 8,
   },
-  flagContainer: {
-    backgroundColor: '#f9f9f9',
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 5,
-  },
+
   flagIcon: {
     width: 28,
     height: 18,
     resizeMode: 'contain',
   },
+
   identifierInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
     fontFamily: 'Poppins-Regular',
+    color: '#101828',
     paddingVertical: 14,
   },
+
+  passwordWrapper: {
+    position: 'relative',
+  },
+
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderColor: '#E4E7EC',
+    borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 16,
     marginBottom: 18,
     fontSize: 16,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     fontFamily: 'Poppins-Regular',
-    color: 'rgb(0,0,0)',
+    color: '#101828',
   },
-  passwordWrapper: {
-    position: 'relative',
-  },
+
   eyeIcon: {
     position: 'absolute',
-    top: 12,
-    right: 15,
+    top: 14,
+    right: 14,
   },
+
   eyeIconImage: {
-    width: 24,
-    height: 24,
-    tintColor: '#302f2f',
+    width: 22,
+    height: 22,
+    tintColor: '#667085',
   },
+
   loginButton: {
-    backgroundColor: '#8B46FF',
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: '#2F80ED',
+    paddingVertical: 16,
+    borderRadius: 28,
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 14,
   },
+
   loginButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: width * 0.045,
     fontFamily: 'Poppins-SemiBold',
   },
+
   link: {
-    marginTop: 5,
-    color: '#6A11CB',
+    marginTop: 6,
+    color: '#2F80ED',
     fontSize: width * 0.035,
     fontFamily: 'Poppins-Regular',
     textAlign: 'center',
   },
+
   errorText: {
-    color: 'red',
+    color: '#D92D20',
     fontSize: 14,
-    marginBottom: 10,
+    marginBottom: 12,
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
   },

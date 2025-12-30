@@ -1,4 +1,6 @@
-import React, {useState, useEffect, useRef} from 'react';
+// src/screens/Auth/otp/GOtpScreen.js
+
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,67 +11,79 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import SuccessModal from '../utlits/SuccessModal';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 import DeviceInfo from 'react-native-device-info';
-import {useAuth} from '../../../../Authcontex/jailer.js'; // adjust path if needed
-import api from '../../../../services/api';
-const GOtpScreen = () => {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [timer, setTimer] = useState(180);
-  const [resending, setResending] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+import api from '../../../../../services/api';
+import { loginThunk } from '../../../../../store/auth/authThunks';
+import SuccessModal from '../utlits/SuccessModal';
+
+const OTP_LENGTH = 6;
+const RESEND_TIME = 180;
+
+export default function GOtpScreen() {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const route = useRoute();
-  const {identifier, name, country, password, termsAccepted} = route.params;
-  const {login} = useAuth();
+
+  const { identifier, name, country, password, termsAccepted } = route.params;
+
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [error, setError] = useState('');
+  const [timer, setTimer] = useState(RESEND_TIME);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const inputs = useRef([]);
 
+  /* ============================
+     TIMER
+  ============================ */
   useEffect(() => {
-    let interval;
-    if (timer > 0) {
-      interval = setInterval(() => setTimer(prev => prev - 1), 1000);
-    }
+    if (timer <= 0) return;
+    const interval = setInterval(() => {
+      setTimer(prev => prev - 1);
+    }, 1000);
     return () => clearInterval(interval);
   }, [timer]);
 
+  /* ============================
+     OTP INPUT HANDLING
+  ============================ */
   const handleChange = (text, index) => {
-    const newOtp = [...otp];
+    const next = [...otp];
 
     if (text.length > 1) {
       text.split('').forEach((char, i) => {
-        if (index + i < 6) {
-          newOtp[index + i] = char;
+        if (index + i < OTP_LENGTH) {
+          next[index + i] = char;
         }
       });
-      setOtp(newOtp);
-      if (index + text.length - 1 < 6) {
-        inputs.current[index + text.length - 1]?.focus();
-      }
-    } else {
-      newOtp[index] = text;
-      setOtp(newOtp);
-
-      if (text && index < 5) {
-        inputs.current[index + 1]?.focus();
-      } else if (!text && index > 0) {
-        inputs.current[index - 1]?.focus();
-      }
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    const enteredOtp = otp.join('').trim();
-
-    if (!enteredOtp) {
-      setError('OTP is required');
+      setOtp(next);
+      const focusIndex = Math.min(index + text.length - 1, OTP_LENGTH - 1);
+      inputs.current[focusIndex]?.focus();
       return;
     }
 
-    if (enteredOtp.length !== 6 || isNaN(enteredOtp)) {
+    next[index] = text;
+    setOtp(next);
+
+    if (text && index < OTP_LENGTH - 1) {
+      inputs.current[index + 1]?.focus();
+    } else if (!text && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  };
+
+  /* ============================
+     VERIFY OTP
+  ============================ */
+  const handleVerifyOtp = async () => {
+    const enteredOtp = otp.join('').trim();
+
+    if (enteredOtp.length !== OTP_LENGTH) {
       setError('OTP must be a 6-digit number');
       return;
     }
@@ -87,33 +101,72 @@ const GOtpScreen = () => {
         termsAccepted,
       });
 
-      if (res.data.success) {
-        await autoLoginAfterOtp(identifier, password);
-        setShowSuccessModal(true);
-      } else {
-        setError(res.data.message || 'OTP verification failed');
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || 'OTP verification failed');
       }
+
+      await autoLoginAfterOtp();
+      setShowSuccessModal(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Server error');
+      setError(err.response?.data?.message || err.message || 'Server error');
     } finally {
       setLoading(false);
     }
   };
+
+  /* ============================
+     AUTO LOGIN AFTER OTP (REDUX)
+  ============================ */
+  const autoLoginAfterOtp = async () => {
+    const deviceInfo = `${DeviceInfo.getDeviceType()} - ${DeviceInfo.getBrand()} ${DeviceInfo.getModel()}`;
+
+    const res = await api.post('/api/login', {
+      identifier: identifier.trim(),
+      password,
+      deviceInfo,
+    });
+
+    const {
+      accessToken,
+      refreshToken,
+      sessionId,
+      accountType,
+      userSubscription,
+      userId,
+      userCountry,
+      userShownearby,
+    } = res.data;
+
+    dispatch(
+      loginThunk({
+        accessToken,
+        refreshToken,
+        sessionId,
+        userAccountType: accountType,
+        userSubscription,
+        userId,
+        userCountry,
+        userShownearby,
+      }),
+    );
+  };
+
+  /* ============================
+     RESEND OTP
+  ============================ */
   const handleResendOtp = async () => {
     setResending(true);
     try {
-      const res = await api.post('/api/send-otp', {
-        identifier,
-      });
+      const res = await api.post('/api/send-otp', { identifier });
 
-      if (res.data.success) {
-        Alert.alert('Success', 'OTP resent successfully');
-        setOtp(['', '', '', '', '', '']);
-        setTimer(180);
-        inputs.current[0]?.focus();
-      } else {
-        Alert.alert('Error', res.data.message || 'Failed to resend OTP');
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || 'Failed to resend OTP');
       }
+
+      Alert.alert('Success', 'OTP resent successfully');
+      setOtp(Array(OTP_LENGTH).fill(''));
+      setTimer(RESEND_TIME);
+      inputs.current[0]?.focus();
     } catch (err) {
       Alert.alert('Error', err.response?.data?.message || 'Server error');
     } finally {
@@ -121,178 +174,183 @@ const GOtpScreen = () => {
     }
   };
 
-  const getDeviceInfo = async () => {
-    const deviceType = DeviceInfo.getDeviceType();
-    const brand = DeviceInfo.getBrand();
-    const model = DeviceInfo.getModel();
-    return `${deviceType} - ${brand} ${model}`;
-  };
-
-  const autoLoginAfterOtp = async (identifier, password) => {
-    try {
-      const deviceInfo = await getDeviceInfo();
-      const res = await api.post('/api/login', {
-        identifier: identifier.trim(),
-        password,
-        deviceInfo,
-      });
-
-      const {accessToken, refreshToken, sessionId, accountType} = res.data; // <-- get accountType also
-
-      await login(accessToken, refreshToken, sessionId, accountType); // <-- pass accountType her
-    } catch (error) {
-      console.log('Auto-login error:', error.response?.data || error.message);
-      Alert.alert('Error', 'Auto-login failed. Please login manually.');
-      navigation.navigate('Login');
-    }
-  };
-
+  /* ============================
+     UI
+  ============================ */
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Enter OTP</Text>
+      <View style={styles.content}>
+        <Text style={styles.title}>Verify OTP</Text>
 
-      <View style={styles.identifierContainer}>
-        <Text style={styles.identifierText}>Phone/Email: {identifier}</Text>
-      </View>
+        <Text style={styles.subtitle}>Enter the 6-digit code sent to</Text>
+        <Text style={styles.identifierText}>{identifier}</Text>
 
-      <View style={styles.otpContainer}>
-        {otp.map((digit, index) => (
-          <TextInput
-            key={index}
-            ref={ref => (inputs.current[index] = ref)}
-            style={styles.otpInput}
-            value={digit}
-            onChangeText={text => handleChange(text, index)}
-            keyboardType="numeric"
-            maxLength={1}
-            autoFocus={index === 0}
-          />
-        ))}
-      </View>
+        <View style={styles.otpContainer}>
+          {otp.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={ref => (inputs.current[index] = ref)}
+              style={[styles.otpInput, digit ? styles.otpFilled : null]}
+              value={digit}
+              onChangeText={text => handleChange(text, index)}
+              keyboardType="number-pad"
+              maxLength={1}
+              autoFocus={index === 0}
+            />
+          ))}
+        </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleVerifyOtp}
-        disabled={loading}>
-        <Text style={styles.buttonText}>
-          {loading ? 'Verfying' : 'Verify OTP'}
-        </Text>
-      </TouchableOpacity>
-
-      {timer > 0 ? (
-        <Text style={styles.timerText}>
-          Resend OTP in {Math.floor(timer / 60)}:
-          {(timer % 60).toString().padStart(2, '0')}
-        </Text>
-      ) : (
         <TouchableOpacity
-          style={styles.resendContainer}
-          onPress={handleResendOtp}
-          disabled={resending}>
-          {resending ? (
-            <ActivityIndicator size="small" color="#6A11CB" />
+          style={styles.primaryButton}
+          onPress={handleVerifyOtp}
+          disabled={loading}
+          activeOpacity={0.85}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.resendText}>Resend OTP</Text>
+            <Text style={styles.primaryButtonText}>Verify & Continue</Text>
           )}
         </TouchableOpacity>
-      )}
 
-      {showSuccessModal && (
-        <Modal transparent={true} animationType="fade">
-          <SuccessModal
-            visible={showSuccessModal}
-            onClose={() => {
-              setShowSuccessModal(false);
-            }}
-          />
-        </Modal>
-      )}
+        {timer > 0 ? (
+          <Text style={styles.timerText}>
+            Resend OTP in{' '}
+            <Text style={styles.timerBold}>
+              {Math.floor(timer / 60)}:
+              {(timer % 60).toString().padStart(2, '0')}
+            </Text>
+          </Text>
+        ) : (
+          <TouchableOpacity
+            onPress={handleResendOtp}
+            disabled={resending}
+            style={styles.resendContainer}
+          >
+            {resending ? (
+              <ActivityIndicator size="small" color="#2F80ED" />
+            ) : (
+              <Text style={styles.resendText}>Resend OTP</Text>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* SUCCESS MODAL */}
+      <Modal visible={showSuccessModal} transparent animationType="fade">
+        <SuccessModal
+          visible={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+        />
+      </Modal>
     </View>
   );
-};
+}
 
+/* ============================
+   STYLES
+============================ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-    padding: 20,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
+    paddingHorizontal: 24,
   },
+
+  content: {
+    alignItems: 'center',
+  },
+
   title: {
     fontSize: 26,
-    fontWeight: '700',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 30,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#101828',
+    marginBottom: 8,
   },
-  identifierContainer: {
-    alignSelf: 'center',
-    backgroundColor: '#eef2f5',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginBottom: 30,
+
+  subtitle: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#667085',
   },
+
   identifierText: {
-    fontSize: 16,
-    color: '#555',
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#2F80ED',
+    marginBottom: 32,
+    marginTop: 4,
   },
+
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '100%',
     marginBottom: 20,
-    paddingHorizontal: 10,
   },
+
   otpInput: {
-    width: 40,
-    height: 50,
-    borderRadius: 6,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
+    width: 48,
+    height: 56,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#D0D5DD',
     textAlign: 'center',
-    fontSize: 24,
-    color: '#333',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+    fontSize: 22,
+    fontFamily: 'Poppins-SemiBold',
+    color: '#101828',
   },
+
+  otpFilled: {
+    borderColor: '#2F80ED',
+  },
+
   errorText: {
-    color: '#ef4444',
+    color: '#D92D20',
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    marginBottom: 12,
     textAlign: 'center',
-    marginBottom: 10,
   },
-  button: {
-    backgroundColor: '#8B46FF',
-    paddingVertical: 14,
-    borderRadius: 5,
+
+  primaryButton: {
+    backgroundColor: '#2F80ED',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 28,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 6,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
   },
+
   timerText: {
-    textAlign: 'center',
-    color: '#999',
     marginTop: 20,
     fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#667085',
   },
+
+  timerBold: {
+    fontFamily: 'Poppins-Medium',
+    color: '#101828',
+  },
+
   resendContainer: {
     marginTop: 20,
-    alignSelf: 'center',
   },
+
   resendText: {
-    color: '#6A11CB',
-    fontWeight: '600',
-    fontSize: 16,
+    color: '#2F80ED',
+    fontSize: 15,
+    fontFamily: 'Poppins-Medium',
   },
 });
-
-export default GOtpScreen;

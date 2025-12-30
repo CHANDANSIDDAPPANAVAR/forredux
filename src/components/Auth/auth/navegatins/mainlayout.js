@@ -1,11 +1,11 @@
 // navigation/MainLayout.js
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { View, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Regheader from '../components/utlits/Regheders';
 import AuthNavigator from './authnav';
 
-const RegisterLayout = ({children}) => {
+const RegisterLayout = ({ children }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Regheader />

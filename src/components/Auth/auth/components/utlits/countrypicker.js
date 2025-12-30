@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback} from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import countries from './countries';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-const CountryPickerModal = ({visible, onClose, onSelect}) => {
+const CountryPickerModal = ({ visible, onClose, onSelect }) => {
   const [searchText, setSearchText] = useState('');
 
   const filteredCountries = useMemo(() => {
@@ -31,13 +31,14 @@ const CountryPickerModal = ({visible, onClose, onSelect}) => {
   }, [onClose]);
 
   const renderItem = useCallback(
-    ({item}) => (
+    ({ item }) => (
       <TouchableOpacity
         style={styles.countryOption}
         onPress={() => {
           onSelect(item);
           handleClose();
-        }}>
+        }}
+      >
         <View style={styles.countryPicker}>
           <View style={styles.countryFlagsMode}>
             <Image source={item.image} style={styles.countryFlag} />
@@ -50,7 +51,13 @@ const CountryPickerModal = ({visible, onClose, onSelect}) => {
   );
 
   return (
-    <Modal transparent visible={visible} animationType="fade">
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      statusBarTranslucent={true}
+      onRequestClose={handleClose}
+    >
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>

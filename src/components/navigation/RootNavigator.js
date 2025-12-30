@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import AppStack from './AppStack';
 import TLoginScreen from '../Auth/auth/components/login/Login';
 import SplashScreen from './parts/SplashScreen';
+import RegisterLayout from '../Auth/auth/navegatins/mainlayout';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +32,7 @@ const RootNavigator = () => {
       {isAuthenticated ? (
         <Stack.Screen name="App" component={AppStack} />
       ) : (
-        <Stack.Screen name="Auth" component={TLoginScreen} />
+        <Stack.Screen name="Auth" component={RegisterLayout} />
       )}
     </Stack.Navigator>
   );

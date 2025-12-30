@@ -1,5 +1,5 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RegisterTypeScreen from '../components/register';
 import ForgotPasswordScreen from '../components/forgotpass/frogetpass';
 import VerifyResetOtpScreen from '../components/forgotpass/VerifyResetOtpScreen';
@@ -8,13 +8,14 @@ import TLoginScreen from '../components/login/Login';
 import MPRegistrationScreen from '../components/register/registerscreen';
 import GOtpScreen from '../components/register/regotpscreen';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const AuthNavigator = () => {
   return (
     <Stack.Navigator
       initialRouteName="register"
-      screenOptions={{headerShown: false}}>
+      screenOptions={{ headerShown: false }}
+    >
       <Stack.Screen name="register" component={RegisterTypeScreen} />
       <Stack.Screen name="Registerscreen" component={MPRegistrationScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
