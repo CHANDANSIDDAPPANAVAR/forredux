@@ -135,7 +135,7 @@ const MPRegistrationScreen = () => {
         style={styles.keybavdmain}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flex: 1 }}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>

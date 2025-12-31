@@ -46,7 +46,7 @@ export const validateAuthThunk = () => async dispatch => {
       params: { sessionId },
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-
+    console.log('i get check');
     if (!res.data?.isSessionValid) {
       await clearTokens();
       dispatch(authLogout());

@@ -17,6 +17,7 @@ export const loginThunk =
     userId,
     userCountry,
     userShownearby,
+    creatorCreated,
   }) =>
   async dispatch => {
     dispatch(authStart());
@@ -36,6 +37,7 @@ export const loginThunk =
         userId,
         userCountry,
         userShownearby,
+        creatorCreated,
       });
 
       if (!saved) {
@@ -53,14 +55,7 @@ export const loginThunk =
           userId,
           userCountry,
           userShownearby,
-        }),
-      );
-
-      // navigate
-      navigationRef.current?.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'App' }],
+          creatorCreated,
         }),
       );
     } catch (err) {
@@ -200,4 +195,170 @@ export const refreshTokenThunk = () => async (dispatch, getState) => {
     dispatch(authLogout());
     return null; // ✅ NO rejection
   }
+};
+
+//svae accounttype
+
+export const syncAccountTypeThunk = () => async (dispatch, getState) => {
+  const { accessToken, userAccountType } = getState().auth;
+  if (!accessToken) return;
+
+  try {
+    const res = await api.get('/api/subscription', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!res.data?.success) return;
+
+    const backendAccountType = res.data.accounttype;
+
+    // ⛔ backend has no account type yet
+    if (!backendAccountType) return;
+
+    // ⛔ already synced
+    if (backendAccountType === userAccountType) return;
+
+    // ✅ update redux
+    dispatch(
+      authSuccess({
+        userAccountType: backendAccountType,
+        userSubscription: res.data.subscription,
+      }),
+    );
+
+    // ✅ persist to keychain
+    await saveTokens({
+      ...getState().auth,
+      userAccountType: backendAccountType,
+      userSubscription: res.data.subscription,
+    });
+  } catch (err) {
+    console.warn(
+      'syncAccountTypeThunk error:',
+      err?.response?.data || err.message,
+    );
+  }
+};
+
+export const saveAccountTypeThunk =
+  accountType => async (dispatch, getState) => {
+    const { accessToken } = getState().auth;
+    if (!accessToken) throw new Error('No access token');
+
+    try {
+      const res = await api.post(
+        '/api/saveAccountType',
+        { accountType },
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+
+      dispatch(
+        authSuccess({
+          userAccountType: res.data.accountType || accountType,
+        }),
+      );
+
+      await saveTokens({
+        ...getState().auth,
+        userAccountType: res.data.accountType || accountType,
+      });
+
+      return true;
+    } catch (err) {
+      // ✅ Multi-device already selected
+      if (err.response?.status === 409) {
+        const backendType = err.response.data.accountType;
+
+        dispatch(
+          authSuccess({
+            userAccountType: backendType,
+          }),
+        );
+
+        await saveTokens({
+          ...getState().auth,
+          userAccountType: backendType,
+        });
+
+        return true;
+      }
+
+      throw err;
+    }
+  };
+
+export const setCreatorCreatedThunk = () => async (dispatch, getState) => {
+  const { accessToken, creatorCreated } = getState().auth;
+
+  // ⛔ Already set locally → skip API
+  if (creatorCreated) {
+    return true;
+  }
+
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
+  try {
+    // 🔍 Check if creator exists
+    console.log('i get cakl');
+    const res = await api.get('/api/creators/exists', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (res?.data?.exists) {
+      // ✅ Creator already exists
+      dispatch(
+        authSuccess({
+          creatorCreated: true,
+        }),
+      );
+
+      await saveTokens({
+        ...getState().auth,
+        creatorCreated: true,
+      });
+
+      return true;
+    }
+  } catch (err) {
+    // 404 means creator does NOT exist → allow creation
+    if (err.response?.status !== 404) {
+      throw err;
+    }
+  }
+
+  return false;
+};
+
+export const saveCreatorCreatedThunk = () => async (dispatch, getState) => {
+  const { accessToken, creatorCreated } = getState().auth;
+
+  if (!accessToken) {
+    throw new Error('No access token');
+  }
+
+  // ⛔ already set → do nothing
+  if (creatorCreated) {
+    return true;
+  }
+
+  // ✅ update redux
+  dispatch(
+    authSuccess({
+      creatorCreated: true,
+    }),
+  );
+
+  // ✅ persist in storage
+  await saveTokens({
+    ...getState().auth,
+    creatorCreated: true,
+  });
+
+  return true;
 };

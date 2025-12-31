@@ -13,7 +13,13 @@ function Bootstrapper({ children }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(validateAuthThunk()); // 👈 REQUIRED
+    (async () => {
+      // 1️⃣ Restore from Keychain → Redux
+      await dispatch(bootstrapAuth());
+
+      // 2️⃣ Validate token / refresh if needed
+      await dispatch(validateAuthThunk());
+    })();
   }, [dispatch]);
 
   return children;

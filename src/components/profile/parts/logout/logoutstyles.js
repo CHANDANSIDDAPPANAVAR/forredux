@@ -8,21 +8,21 @@ export default StyleSheet.create({
 
   subcontiner: {
     flex: 1,
-    padding: 20,
+    paddingBottom: 10,
   },
 
   subtitle: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: '#6B7280',
-    marginBottom: 16,
+    padding: 16,
   },
 
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 16,
-    marginBottom: 14,
+    margin: 14,
   },
 
   currentCard: {
@@ -91,7 +91,9 @@ export default StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
+    borderWidth: 1,
     borderColor: '#E5E7EB',
+    backgroundColor: '#fff',
   },
 
   primaryBtn: {

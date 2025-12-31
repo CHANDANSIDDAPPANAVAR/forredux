@@ -130,23 +130,28 @@ export default function GOtpScreen() {
       accessToken,
       refreshToken,
       sessionId,
-      accountType,
-      userSubscription,
-      userId,
-      userCountry,
-      userShownearby,
-    } = res.data;
 
+      user: {
+        accountType,
+        subscription,
+        id,
+        showinnearby,
+        country,
+        hasCreator,
+      },
+    } = res.data;
+    console.log('log in', res.data);
     dispatch(
       loginThunk({
         accessToken,
         refreshToken,
         sessionId,
         userAccountType: accountType,
-        userSubscription,
-        userId,
-        userCountry,
-        userShownearby,
+        userSubscription: subscription,
+        userId: id,
+        userShownearby: showinnearby,
+        userCountry: country,
+        creatorCreated: hasCreator,
       }),
     );
   };

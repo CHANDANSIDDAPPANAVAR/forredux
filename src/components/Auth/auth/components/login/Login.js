@@ -65,7 +65,14 @@ export default function TLoginScreen() {
         accessToken,
         refreshToken,
         sessionId,
-        user: { accountType, subscription, id, showinnearby, country },
+        user: {
+          accountType,
+          subscription,
+          id,
+          showinnearby,
+          country,
+          hasCreator,
+        },
       } = res.data;
 
       dispatch(
@@ -78,6 +85,7 @@ export default function TLoginScreen() {
           userId: id,
           userShownearby: showinnearby,
           userCountry: country,
+          creatorCreated: hasCreator,
         }),
       );
     } catch (error) {

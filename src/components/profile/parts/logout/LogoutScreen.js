@@ -82,6 +82,7 @@ export default function LogoutScreen() {
           data={sessions}
           keyExtractor={item => item.sessionId}
           contentContainerStyle={{ paddingBottom: 160 }}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
             const isCurrent = item.sessionId === currentSessionId;
 

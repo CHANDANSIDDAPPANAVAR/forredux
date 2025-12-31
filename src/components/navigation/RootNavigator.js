@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
-import AppStack from './AppStack';
+
 import TLoginScreen from '../Auth/auth/components/login/Login';
 import SplashScreen from './parts/SplashScreen';
 import RegisterLayout from '../Auth/auth/navegatins/mainlayout';
+import OnboardingStack from './OnboardingStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,7 +20,7 @@ const RootNavigator = () => {
     console.log('🔐 isAuthenticated:', isAuthenticated);
   }, [loading, isAuthenticated]);
 
-  // 🔄 While restoring session from Keychain
+  // 🔄 While restoring session from Keychaina
   if (!bootstrapped) {
     return <SplashScreen />; // 👈 GUARANTEED
   }
@@ -30,7 +31,7 @@ const RootNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        <Stack.Screen name="App" component={AppStack} />
+        <Stack.Screen name="App" component={OnboardingStack} />
       ) : (
         <Stack.Screen name="Auth" component={RegisterLayout} />
       )}

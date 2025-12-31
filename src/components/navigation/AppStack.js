@@ -10,10 +10,7 @@ const Stack = createNativeStackNavigator();
 const AppStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* MAIN TABS */}
       <Stack.Screen name="AppTabs" component={MainTabs} />
-
-      {/* GLOBAL SCREENS */}
       <Stack.Screen name="NotifyStack" component={NotifyStack} />
       <Stack.Screen name="ProfileStack" component={ProfileStack} />
     </Stack.Navigator>
