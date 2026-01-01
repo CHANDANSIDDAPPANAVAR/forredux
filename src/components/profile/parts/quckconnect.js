@@ -1,11 +1,11 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
-const Settings = () => {
+const Quick = () => {
   return (
     <View>
-      <Text>Seetings</Text>
+      <Text>Quick</Text>
     </View>
   );
 };
-export default Settings;
+export default Quick;

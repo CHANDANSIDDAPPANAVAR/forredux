@@ -1,11 +1,11 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
-const Settings = () => {
+const Professionals = () => {
   return (
     <View>
-      <Text>Seetings</Text>
+      <Text>Professionals</Text>
     </View>
   );
 };
-export default Settings;
+export default Professionals;

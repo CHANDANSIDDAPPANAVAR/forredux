@@ -1,11 +1,11 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
-const Settings = () => {
+const Service = () => {
   return (
     <View>
-      <Text>Seetings</Text>
+      <Text>Service</Text>
     </View>
   );
 };
-export default Settings;
+export default Service;

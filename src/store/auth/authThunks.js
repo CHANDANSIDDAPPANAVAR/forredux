@@ -200,7 +200,8 @@ export const refreshTokenThunk = () => async (dispatch, getState) => {
 //svae accounttype
 
 export const syncAccountTypeThunk = () => async (dispatch, getState) => {
-  const { accessToken, userAccountType } = getState().auth;
+  const { accessToken, userAccountType, userSubscription } = getState().auth;
+
   if (!accessToken) return;
 
   try {
@@ -212,27 +213,31 @@ export const syncAccountTypeThunk = () => async (dispatch, getState) => {
 
     if (!res.data?.success) return;
 
-    const backendAccountType = res.data.accounttype;
+    const backendAccountType = res.data.accounttype || null;
+    const backendSubscription = res.data.subscription || 'free';
 
-    // ⛔ backend has no account type yet
-    if (!backendAccountType) return;
+    let changed = false;
+    const updates = {};
 
-    // ⛔ already synced
-    if (backendAccountType === userAccountType) return;
+    if (backendAccountType && backendAccountType !== userAccountType) {
+      updates.userAccountType = backendAccountType;
+      changed = true;
+    }
+
+    if (backendSubscription && backendSubscription !== userSubscription) {
+      updates.userSubscription = backendSubscription;
+      changed = true;
+    }
+
+    if (!changed) return;
 
     // ✅ update redux
-    dispatch(
-      authSuccess({
-        userAccountType: backendAccountType,
-        userSubscription: res.data.subscription,
-      }),
-    );
+    dispatch(authSuccess(updates));
 
     // ✅ persist to keychain
     await saveTokens({
       ...getState().auth,
-      userAccountType: backendAccountType,
-      userSubscription: res.data.subscription,
+      ...updates,
     });
   } catch (err) {
     console.warn(
