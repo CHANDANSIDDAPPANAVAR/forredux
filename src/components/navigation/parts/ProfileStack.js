@@ -11,6 +11,9 @@ import Managsub from '../../profile/parts/mangesub';
 import Settings from '../../profile/parts/seetings';
 import Support from '../../profile/parts/support';
 import Order from '../../profile/parts/order';
+import Eopen from '../../profile/parts/identity/Eparts/Eopen';
+import Ebuss from '../../profile/parts/identity/Eparts/Ebuss';
+import Eproff from '../../profile/parts/identity/Eparts/Eproff';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +31,9 @@ const ProfileStack = () => {
       <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="Support" component={Support} />
       <Stack.Screen name="Orders" component={Order} />
+      <Stack.Screen name="Eopen" component={Eopen} />
+      <Stack.Screen name="Ebuss" component={Ebuss} />
+      <Stack.Screen name="Eproff" component={Eproff} />
     </Stack.Navigator>
   );
 };

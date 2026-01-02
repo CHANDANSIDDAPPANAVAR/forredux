@@ -1,21 +1,18 @@
+// services/mediaUrl.js
 import { API_BASE_URL } from '@env';
 
-/**
- * Build absolute media URL safely
- * - Supports relative paths from backend
- * - Supports full URLs (cdn, s3, etc.)
- * - Prevents double slashes
- */
-export const mediaUrl = path => {
-  if (!path) return null;
+export const MEDIA_BASE_URL = API_BASE_URL.replace(/\/$/, '');
 
-  // Already absolute URL
-  if (/^https?:\/\//i.test(path)) {
-    return path;
+export const resolveMediaUrl = url => {
+  if (!url || typeof url !== 'string') return null;
+
+  // Absolute URL
+  if (url.startsWith('http')) {
+    return url.includes('localhost')
+      ? url.replace('localhost', '10.0.2.2') // Android emulator
+      : url;
   }
 
-  const base = API_BASE_URL.replace(/\/$/, '');
-  const cleanPath = path.replace(/^\//, '');
-
-  return `${base}/${cleanPath}`;
+  // Relative path
+  return `${MEDIA_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };

@@ -1,83 +1,160 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, memo } from 'react';
 import {
-  View,
   Image,
   Modal,
   Pressable,
   StyleSheet,
   TouchableOpacity,
+  View,
+  Animated,
 } from 'react-native';
-import { mediaUrl } from '../../../../../services/mediaUrl';
+import { resolveMediaUrl } from '../../../../../services/mediaUrl';
 
-const resolveImageUrl = url => {
-  if (!url) {
-    return null;
-  }
-  if (url.startsWith('http')) {
-    return url.includes('localhost')
-      ? url.replace('localhost', '10.0.2.2')
-      : url;
-  }
-  return `${getBaseUrl()}${url}`;
-};
+/* ----------------------------------
+   CONSTANTS
+----------------------------------- */
+const FALLBACK_IMAGE = require('../../../../assets/util/no-img.png');
 
-const isValidImage = img =>
-  img &&
-  img !== 'null' &&
-  img !== '' &&
-  (typeof img === 'string' || (typeof img === 'object' && img.uri));
+/* ----------------------------------
+   UTILS
+----------------------------------- */
+const isValidRemoteImage = source =>
+  typeof source === 'string' &&
+  source.trim() !== '' &&
+  source !== 'null' &&
+  source !== 'undefined';
 
+/* ----------------------------------
+   SKELETON SHIMMER
+----------------------------------- */
+const Skeleton = memo(() => {
+  const opacity = useMemo(() => new Animated.Value(0.4), []);
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.4,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    animation.start();
+    return () => animation.stop();
+  }, [opacity]);
+
+  return <Animated.View style={[styles.skeleton, { opacity }]} />;
+});
+
+/* ----------------------------------
+   COVER IMAGE
+----------------------------------- */
 const CoverImage = ({ source, style }) => {
-  const [showModal, setShowModal] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  let imageSource = require('../../assets/no-imge-p.png');
-  let previewUri = null;
+  /* Resolve remote image only once */
+  const resolvedUri = useMemo(() => {
+    if (!isValidRemoteImage(source)) return null;
+    return resolveMediaUrl(source);
+  }, [source]);
 
-  if (isValidImage(source)) {
-    const uri =
-      typeof source === 'string'
-        ? resolveImageUrl(source)
-        : source.uri?.startsWith('file://')
-        ? source.uri
-        : resolveImageUrl(source.uri);
+  const showRemoteImage = !!resolvedUri && !failed;
 
-    if (uri) {
-      imageSource = { uri };
-      previewUri = uri;
-    }
-  }
+  /* Handlers */
+  const handleLoad = useCallback(() => {
+    setLoaded(true);
+  }, []);
+
+  const handleError = useCallback(() => {
+    setFailed(true);
+    setLoaded(true); // stop skeleton
+  }, []);
+
+  const openPreview = useCallback(() => {
+    if (showRemoteImage) setPreviewVisible(true);
+  }, [showRemoteImage]);
+
+  const closePreview = useCallback(() => {
+    setPreviewVisible(false);
+  }, []);
 
   return (
     <>
+      {/* COVER IMAGE */}
       <TouchableOpacity
         activeOpacity={0.9}
-        onPress={() => previewUri && setShowModal(true)}
+        disabled={!showRemoteImage}
+        onPress={openPreview}
       >
-        <Image source={imageSource} style={styles.coverImage} />
+        <View style={[styles.wrapper, style]}>
+          {/* Skeleton while loading */}
+          {!loaded && <Skeleton />}
+
+          <Image
+            source={showRemoteImage ? { uri: resolvedUri } : FALLBACK_IMAGE}
+            style={[
+              styles.coverImage,
+              !showRemoteImage && styles.fallbackImage,
+            ]}
+            resizeMode="cover"
+            onLoad={handleLoad}
+            onError={handleError}
+            accessibilityRole="image"
+            accessibilityLabel="Profile cover image"
+          />
+        </View>
       </TouchableOpacity>
 
-      <Modal visible={showModal} transparent animationType="fade">
-        <Pressable
-          style={styles.modalBackground}
-          onPress={() => setShowModal(false)}
+      {/* FULLSCREEN PREVIEW */}
+      {showRemoteImage && (
+        <Modal
+          visible={previewVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={closePreview}
         >
-          <Image
-            source={{ uri: previewUri }}
-            style={styles.fullImage}
-            resizeMode="cover"
-          />
-        </Pressable>
-      </Modal>
+          <Pressable style={styles.modalBackground} onPress={closePreview}>
+            <Image
+              source={{ uri: resolvedUri }}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
+          </Pressable>
+        </Modal>
+      )}
     </>
   );
 };
 
+/* ----------------------------------
+   STYLES
+----------------------------------- */
 const styles = StyleSheet.create({
-  coverImage: {
+  wrapper: {
     width: '100%',
     height: 250,
-    backgroundColor: '#f6f6f6',
-    resizeMode: 'cover',
+    backgroundColor: '#f3f4f6',
+    overflow: 'hidden',
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+  },
+  fallbackImage: {
+    opacity: 0.9,
+  },
+  skeleton: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#e5e7eb',
   },
   modalBackground: {
     flex: 1,
@@ -86,10 +163,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   fullImage: {
-    width: '90%',
-    height: '30%',
-    borderRadius: 6,
+    width: '95%',
+    height: '80%',
+    borderRadius: 10,
   },
 });
 
-export default CoverImage;
+export default memo(CoverImage);
