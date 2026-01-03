@@ -17,6 +17,9 @@ import AddressSection from '../Sparts/opennetwork/AddressSection';
 import Somesection from '../Sparts/opennetwork/somesection';
 import CustomLinks from '../Sparts/opennetwork/CustomLinks';
 import SelectedKeywordsInfo from '../Sparts/Business/SelectedKeywordsInfo';
+import ProffBio from '../Sparts/Professional/proffBio';
+import BusinessIdentityCard from '../Sparts/Business/BusinessIdentityCard';
+import CallChatActions from '../Sparts/services/CallChatActions';
 
 const Business = ({ isPro }) => {
   const { accessToken } = useSelector(state => state.auth);
@@ -38,6 +41,10 @@ const Business = ({ isPro }) => {
     loadProfile();
   }, [accessToken]);
 
+  const pickedlotion = {
+    latitude: profile?.latitude,
+    longitude: profile?.longitude,
+  };
   return (
     <SafeAreaView style={styles.container}>
       <Hederprofile
@@ -52,35 +59,38 @@ const Business = ({ isPro }) => {
         showsVerticalScrollIndicator={false}
       >
         <Coverimg source={profile?.cover_image} />
-        <BussLogoPreview
-          logoSrc={profile?.profile_image}
-          birthYear={profile?.birth_year}
-        />
+
         <View style={styles.maincontent}>
-          <BusinessBasicInfo
+          <BusinessIdentityCard
+            logo={profile?.profile_image} // or business_logo
             businessName={profile?.name}
             tagline={profile?.tagline}
-            city={profile?.namelocation}
-            bio={profile?.bio}
-            category={profile?.selected_skills}
+            category={profile?.selected_skills} // e.g. "IT Consultant"
+            city={profile?.namelocation} // e.g. "Tumkuru"
+            startYear={profile?.birth_year}
+          />
+          <CallChatActions
+            phoneNumber={profile?.phone_number}
+            onChatPress={() => navigation.navigate('ChatScreen', { userId })}
+          />
+          <ProffBio bio={profile?.bio} />
+
+          <Documents documents={profile?.documents} />
+          <AvailabilitySection availability={profile?.availability} />
+          <SelectedLanguages languages={profile?.selected_languages} />
+
+          <GalleryPreview galleryImages={profile?.gallery_images} />
+          {profile?.upi_id && <UPIPaymentButton upiId={profile?.upi_id} />}
+
+          <CustomLinks customLinks={profile?.custom_links} />
+          <AddressSection
+            pickedAddress={profile?.address}
+            pickedLocation={pickedlotion}
           />
           <ContactSection
             phoneNumber={profile?.phone_number}
             email={profile?.email}
-            emergencyNumber={profile?.emergency_number}
           />
-          <SelectedLanguages languages={profile?.selected_languages} />
-          <AvailabilitySection availability={profile?.availability} />
-          <GalleryPreview galleryImages={profile?.gallery_images} />
-          <Documents documents={profile?.documents} />
-          {profile?.upi_id && <UPIPaymentButton upiId={profile?.upi_id} />}
-
-          <AddressSection
-            pickedAddress={profile?.address}
-            pickedLocation={profile?.pickedLocation}
-          />
-
-          <CustomLinks customLinks={profile?.custom_links} />
           <Somesection socialAccounts={profile?.social_accounts} />
           <SelectedKeywordsInfo keywords={profile?.keywords} />
         </View>

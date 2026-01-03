@@ -23,7 +23,7 @@ const StatusSection = ({ status, fillone, filltwo }) => {
 export default React.memo(StatusSection);
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
+    marginVertical: 10,
     alignItems: 'center',
   },
 

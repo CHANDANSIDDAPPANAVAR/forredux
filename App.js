@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 import { bootstrapAuth } from './src/store/auth/authBootstrap';
+import { navigationRef } from './src/navigation/NavigationService';
 import RootNavigator from './src/components/navigation/RootNavigator';
 import { store } from './src/store';
 import { validateAuthThunk } from './src/store/auth/authValidateThunk';
@@ -37,7 +38,7 @@ function App() {
             barStyle="dark-content"
           />
 
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             <ToastMessage />
             <RootNavigator />
           </NavigationContainer>

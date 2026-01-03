@@ -38,7 +38,7 @@ const BasicInfo = ({ name, bio, location }) => {
 export default React.memo(BasicInfo);
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
+    paddingVertical: 12,
     alignItems: 'center',
   },
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
 
   /* BIO */
   bioContainer: {
-    marginTop: 6,
+    margin: 6,
     width: '100%',
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     color: '#374151',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
 });

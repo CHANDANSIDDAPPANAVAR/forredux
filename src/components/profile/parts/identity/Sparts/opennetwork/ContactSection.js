@@ -114,7 +114,7 @@ export default React.memo(ContactSection);
 ---------------------------- */
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 12,
+    marginVertical: 15,
     paddingHorizontal: 4,
   },
 
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 12,
-    marginBottom: 10,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,

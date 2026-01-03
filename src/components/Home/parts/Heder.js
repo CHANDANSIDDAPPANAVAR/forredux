@@ -52,9 +52,9 @@ export default Header;
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: '#fff',
-    minHeight: 56, // ✅ flexible
-    paddingVertical: 8, // ✅ allows safe area growth
+    backgroundColor: '#f5f5f5f',
+    minHeight: 56,
+    paddingVertical: 8,
     paddingHorizontal: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   },
 
   logo: {
-    width: 150,
-    height: 40,
+    width: 120,
+    height: 50,
     resizeMode: 'contain',
   },
 

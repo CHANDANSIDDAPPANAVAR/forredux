@@ -14,6 +14,7 @@ import Order from '../../profile/parts/order';
 import Eopen from '../../profile/parts/identity/Eparts/Eopen';
 import Ebuss from '../../profile/parts/identity/Eparts/Ebuss';
 import Eproff from '../../profile/parts/identity/Eparts/Eproff';
+import Eserv from '../../profile/parts/identity/Eparts/Eserv';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ const ProfileStack = () => {
       <Stack.Screen name="Eopen" component={Eopen} />
       <Stack.Screen name="Ebuss" component={Ebuss} />
       <Stack.Screen name="Eproff" component={Eproff} />
+      <Stack.Screen name="Eserv" component={Eserv} />
     </Stack.Navigator>
   );
 };

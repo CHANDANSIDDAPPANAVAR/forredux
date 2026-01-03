@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Hederprofile from '../Sparts/opennetwork/Hederprofile';
 import Coverimg from '../Sparts/coverimg';
 import Profesprofile from '../Sparts/Professional/profesprofile';
-import BusinessBasicInfo from '../Sparts/Business/BusinessBasicInfo';
+
 import ProfessionalInfo from '../Sparts/Professional/ProfessionalInfo';
 import ServicesAndPricingInfo from '../Sparts/Professional/ServicesAndPricingInfo';
 import SelectedLanguages from '../Sparts/opennetwork/SelectedLanguages';
@@ -20,6 +20,7 @@ import Documents from '../Sparts/opennetwork/documents';
 import UPIPaymentButton from '../Sparts/opennetwork/UPIPaymentButton';
 import ContactSection from '../Sparts/opennetwork/ContactSection';
 import ProfileIdentityCard from '../Sparts/Professional/ProfileIdentityCard';
+import ProffBio from '../Sparts/Professional/proffBio';
 const Professionals = ({ isPro }) => {
   const { accessToken } = useSelector(state => state.auth);
   const [profile, setProfile] = useState(null);
@@ -71,7 +72,7 @@ const Professionals = ({ isPro }) => {
         />
 
         <View style={styles.maincontent}>
-          <BusinessBasicInfo bio={profile?.bio} />
+          <ProffBio bio={profile?.bio} />
           <ProfessionalInfo
             professionalAreas={profile?.selected_skills}
             experience={profile?.year_of_experience}
@@ -92,7 +93,6 @@ const Professionals = ({ isPro }) => {
           <ContactSection
             phoneNumber={profile?.phone_number}
             email={profile?.email}
-            emergencyNumber={profile?.emergency_number}
           />
 
           <Somesection socialAccounts={profile?.social_accounts} />

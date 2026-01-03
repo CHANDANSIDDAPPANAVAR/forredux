@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 /* ---------------------------
@@ -31,26 +31,23 @@ const formatTime = minutes => {
    Component
 ---------------------------- */
 const AvailabilitySection = ({ availability }) => {
-  /** ✅ HOOKS FIRST */
+  /** ✅ ALL HOOKS FIRST (NO RETURNS ABOVE THIS) */
   const [expanded, setExpanded] = useState(false);
 
   const todayIndex = new Date().getDay();
   const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
 
-  /** ---------- Normalize availability safely ---------- */
+  /** Normalize availability */
   const normalized = useMemo(() => {
-    if (!Array.isArray(availability) || availability.length === 0) {
-      return [];
-    }
+    if (!Array.isArray(availability)) return [];
 
     return availability
       .filter(
         item =>
           item &&
-          item.day &&
+          DAYS.includes(item.day) &&
           item.from != null &&
-          item.to != null &&
-          DAYS.includes(item.day),
+          item.to != null,
       )
       .map(item => {
         const from = parseTime(item.from);
@@ -63,17 +60,30 @@ const AvailabilitySection = ({ availability }) => {
           to,
           label: `${formatTime(from)} – ${formatTime(to)}`,
         };
-      })
-      .sort((a, b) => a.dayIndex - b.dayIndex);
+      });
   }, [availability]);
 
-  /** ❌ NO DATA → RENDER NOTHING (NO DESIGN) */
+  /** Group by day (ALWAYS RUNS) */
+  const availabilityMap = useMemo(() => {
+    const map = {};
+    DAYS.forEach(day => {
+      map[day] = [];
+    });
+
+    normalized.forEach(slot => {
+      map[slot.day].push(slot);
+    });
+
+    return map;
+  }, [normalized]);
+
+  /** ❌ SAFE early return AFTER hooks */
   if (normalized.length === 0) {
     return null;
   }
 
-  /** ---------- Today status ---------- */
-  const todaySlots = normalized.filter(s => s.dayIndex === todayIndex);
+  /** Today slots */
+  const todaySlots = availabilityMap[DAYS[todayIndex]] || [];
 
   const isAvailableNow = todaySlots.some(
     s => nowMinutes >= s.from && nowMinutes <= s.to,
@@ -102,16 +112,16 @@ const AvailabilitySection = ({ availability }) => {
         </View>
       </View>
 
-      {/* Today slots */}
+      {/* Today */}
       {todaySlots.map((slot, index) => (
         <Text key={index} style={styles.todaySlot}>
           Today • {slot.label}
         </Text>
       ))}
 
-      {/* Expand */}
+      {/* Toggle */}
       <TouchableOpacity
-        onPress={() => setExpanded(p => !p)}
+        onPress={() => setExpanded(v => !v)}
         activeOpacity={0.7}
         style={styles.expandBtn}
       >
@@ -120,15 +130,26 @@ const AvailabilitySection = ({ availability }) => {
         </Text>
       </TouchableOpacity>
 
-      {/* Full schedule */}
+      {/* Weekly */}
       {expanded && (
         <View style={styles.schedule}>
-          {normalized.map((slot, index) => (
-            <View key={index} style={styles.row}>
-              <Text style={styles.day}>{slot.day}</Text>
-              <Text style={styles.time}>{slot.label}</Text>
-            </View>
-          ))}
+          {DAYS.map((day, index) => {
+            const slots = availabilityMap[day];
+
+            return (
+              <View key={index} style={styles.row}>
+                <Text style={styles.day}>{day}</Text>
+
+                {slots.length > 0 ? (
+                  <Text style={styles.time}>
+                    {slots.map(s => s.label).join(', ')}
+                  </Text>
+                ) : (
+                  <Text style={styles.closed}>Closed</Text>
+                )}
+              </View>
+            );
+          })}
         </View>
       )}
     </View>
@@ -145,8 +166,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     padding: 16,
     borderRadius: 18,
-    backgroundColor: '#ffffff',
-
+    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -154,12 +174,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  /* Header */
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    alignItems: 'center',
   },
 
   title: {
@@ -168,54 +186,29 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
 
-  /* Status */
   statusBadge: {
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 999,
   },
 
-  available: {
-    backgroundColor: '#dcfce7',
-  },
+  available: { backgroundColor: '#dcfce7' },
+  unavailable: { backgroundColor: '#fee2e2' },
 
-  unavailable: {
-    backgroundColor: '#fee2e2',
-  },
+  availableText: { color: '#166534' },
+  unavailableText: { color: '#991b1b' },
 
-  availableText: {
-    color: '#166534',
-  },
+  statusText: { fontSize: 12, fontWeight: '700' },
 
-  unavailableText: {
-    color: '#991b1b',
-  },
-
-  statusText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  /* Today slot */
   todaySlot: {
     marginTop: 6,
     fontSize: 13,
-    fontWeight: '500',
     color: '#334155',
   },
 
-  /* Expand */
-  expandBtn: {
-    marginTop: 10,
-  },
+  expandBtn: { marginTop: 10 },
+  expandText: { color: '#2563eb', fontWeight: '600' },
 
-  expandText: {
-    fontSize: 13,
-    color: '#2563eb',
-    fontWeight: '600',
-  },
-
-  /* Schedule */
   schedule: {
     marginTop: 12,
     borderTopWidth: 1,
@@ -229,14 +222,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
 
-  day: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
+  day: { fontWeight: '600', color: '#0f172a' },
+  time: { color: '#475569' },
 
-  time: {
-    fontSize: 13,
-    color: '#475569',
+  closed: {
+    color: '#94a3b8',
+    fontStyle: 'italic',
   },
 });

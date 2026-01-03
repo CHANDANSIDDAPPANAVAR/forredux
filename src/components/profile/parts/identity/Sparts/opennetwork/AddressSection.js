@@ -104,7 +104,7 @@ export default React.memo(AddressSection);
 ---------------------------- */
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 5,
+    marginVertical: 15,
   },
 
   card: {

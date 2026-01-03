@@ -1,52 +1,63 @@
+// util/Bitparts/BottomNav.js
 import React from 'react';
 import { Image, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const ICONS = {
-  DiscoverTab: require('../../assets/icons/people-search.png'),
-  BlinkTab: require('../../assets/icons/Blink.png'),
-  HomeTab: require('../../assets/icons/qr-scan.png'),
-  ConnectsTab: require('../../assets/icons/connects.png'),
-  ChatTab: require('../../assets/icons/chat.png'),
-};
-
-const LABELS = {
-  DiscoverTab: 'Discover',
-  BlinkTab: 'Blink',
-  HomeTab: 'Home',
-  ConnectsTab: 'Connects',
-  ChatTab: 'Chat',
-};
+const TABS = [
+  {
+    key: 'DiscoverTab',
+    label: 'Discover',
+    icon: require('../../assets/icons/people-search.png'),
+  },
+  {
+    key: 'BlinkTab',
+    label: 'Blink',
+    icon: require('../../assets/icons/Blink.png'),
+  },
+  {
+    key: 'HomeTab',
+    label: 'Home',
+    icon: require('../../assets/icons/qr-scan.png'),
+  },
+  {
+    key: 'ConnectsTab',
+    label: 'Connects',
+    icon: require('../../assets/icons/connects.png'),
+  },
+  {
+    key: 'ChatTab',
+    label: 'Chat',
+    icon: require('../../assets/icons/chat.png'),
+  },
+];
 
 const BottomNav = ({ state, navigation }) => {
+  const currentRoute = state.routes[state.index].name;
+
+  // 🚫 Hide tab bar on Blink
+  if (currentRoute === 'BlinkTab') return null;
+
   return (
-    <SafeAreaView edges={['bottom']} style={styles.container}>
-      <View style={styles.nav}>
-        {state.routes.map((route, index) => {
-          const isFocused = state.index === index;
-          const icon = ICONS[route.name];
-          const label = LABELS[route.name];
+    <SafeAreaView edges={['bottom']} style={styles.mainbutnav}>
+      <View style={styles.subminbutnav}>
+        {TABS.map(tab => {
+          const index = state.routes.findIndex(r => r.name === tab.key);
+          const isActive = state.index === index;
 
           return (
             <TouchableOpacity
-              key={route.key}
-              style={styles.tab}
-              onPress={() => navigation.navigate(route.name)}
+              key={tab.key}
+              style={styles.discover}
+              onPress={() => !isActive && navigation.navigate(tab.key)}
             >
               <Image
-                source={icon}
-                style={[
-                  styles.icon,
-                  { tintColor: isFocused ? '#000' : '#999' },
-                ]}
+                source={tab.icon}
+                style={[styles.icon, { tintColor: isActive ? '#000' : '#999' }]}
               />
               <Text
-                style={[
-                  styles.label,
-                  { color: isFocused ? '#1e1c1c' : '#555' },
-                ]}
+                style={[styles.label, { color: isActive ? '#1e1c1c' : '#555' }]}
               >
-                {label}
+                {tab.label}
               </Text>
             </TouchableOpacity>
           );
@@ -59,24 +70,22 @@ const BottomNav = ({ state, navigation }) => {
 export default BottomNav;
 
 const styles = StyleSheet.create({
-  container: {
+  mainbutnav: {
     backgroundColor: '#f5f5f5',
   },
-  nav: {
+  subminbutnav: {
     flexDirection: 'row',
-    height: 56,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#ddd',
+    height: 55,
   },
-  tab: {
+  discover: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   icon: {
-    width: 24,
-    height: 24,
-    marginBottom: 3,
+    width: 26,
+    height: 26,
+    marginBottom: 4,
   },
   label: {
     fontSize: 11,

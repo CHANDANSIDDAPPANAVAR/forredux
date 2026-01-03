@@ -29,6 +29,7 @@ const Opennetwork = ({ isPro }) => {
       try {
         const data = await fetchAndCacheProfile(accessToken);
         setProfile(data);
+        console.log(data);
       } catch (err) {
         console.error('❌ Failed to load profile:', err);
       }
@@ -69,19 +70,19 @@ const Opennetwork = ({ isPro }) => {
           />
           <SelectedLanguages languages={profile?.selected_languages} />
           <Documents documents={profile?.documents} />
+
+          <CustomLinks customLinks={profile?.custom_links} />
           <ContactSection
             phoneNumber={profile?.phone_number}
             email={profile?.email}
             emergencyNumber={profile?.emergency_number}
           />
-
           {profile?.upi_id && (
             <UPIPaymentButton
               upiId={profile?.upi_id}
               payeeName={profile?.name || 'User'}
             />
           )}
-
           <AddressSection
             pickedAddress={profile?.address}
             pickedLocation={
@@ -93,7 +94,6 @@ const Opennetwork = ({ isPro }) => {
                 : null
             }
           />
-          <CustomLinks customLinks={profile?.custom_links} />
           <Somesection socialAccounts={profile?.social_accounts} />
         </View>
       </ScrollView>

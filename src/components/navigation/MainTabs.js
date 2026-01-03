@@ -1,3 +1,4 @@
+// navigation/MainTabs.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
@@ -13,12 +14,11 @@ const Tab = createBottomTabNavigator();
 const MainTabs = () => {
   return (
     <Tab.Navigator
-      initialRouteName="HomeTab" // 👈 optional but recommended
-      lazy={true}
+      initialRouteName="HomeTab"
+      backBehavior="none"
       screenOptions={{ headerShown: false }}
       tabBar={props => <BottomNav {...props} />}
     >
-      {/* ✅ ORDER MATTERS */}
       <Tab.Screen name="DiscoverTab" component={DiscoverStack} />
       <Tab.Screen name="BlinkTab" component={BlinkStack} />
       <Tab.Screen name="HomeTab" component={HomeStack} />

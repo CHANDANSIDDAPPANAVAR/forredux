@@ -1,42 +1,62 @@
-import React, { useEffect } from 'react';
-import { Text, View } from 'react-native';
-import { useSelector } from 'react-redux';
-
-import { loadTokens } from '../../store/auth/authStorage';
-import { useDispatch } from 'react-redux';
-import { loginThunk, logoutThunk } from '../../store/auth/authThunks';
+import React from 'react';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import useAndroidBackHandler from '../navigation/util/useBackToHome';
 
 const Blink = () => {
-  const auth = useSelector(state => state.auth);
-  console.log('AUTH STATE:', auth);
-  useEffect(() => {
-    loadTokens().then(data => {
-      console.log('KEYCHAIN TOKENS:', data);
-    });
-  }, []);
-  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
-  // fake login
-  dispatch(
-    loginThunk({
-      accessToken: 'test-access',
-      refreshToken: 'test-refresh',
-      sessionId: 'test-session',
-      userAccountType: 'user',
-      userSubscription: 'free',
-      userId: 1,
-      userCountry: 'IN',
-      userShownearby: true,
-    }),
-  );
+  // 🤖 Android hardware back
+  useAndroidBackHandler(() => {
+    navigation.navigate('HomeTab');
+  });
 
-  // fake logout
-  dispatch(logoutThunk());
   return (
-    <View>
-      <Text>Blink</Text>
+    <View style={styles.container}>
+      {/* 🍎 iOS BACK BUTTON */}
+      {Platform.OS === 'ios' && (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate('HomeTab')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backText}>‹ Back</Text>
+        </TouchableOpacity>
+      )}
+
+      <Text style={styles.title}>Blink</Text>
     </View>
   );
 };
 
 export default Blink;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000', // typical Blink / camera background
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50, // adjust if needed for SafeArea
+    left: 16,
+    zIndex: 10,
+  },
+  backText: {
+    color: '#fff',
+    fontSize: 18,
+    fontFamily: 'Poppins-Regular',
+  },
+  title: {
+    color: '#fff',
+    fontSize: 20,
+  },
+});

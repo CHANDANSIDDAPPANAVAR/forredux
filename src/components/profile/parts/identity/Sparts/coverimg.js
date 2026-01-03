@@ -57,6 +57,7 @@ const Skeleton = memo(() => {
    COVER IMAGE
 ----------------------------------- */
 const CoverImage = ({ source, style }) => {
+  console.log('cover', source);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);

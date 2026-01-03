@@ -60,7 +60,7 @@ const InfoBlock = ({ label, value }) => {
 ----------------------------------- */
 const styles = StyleSheet.create({
   card: {
-    marginVertical: 5,
+    marginVertical: 15,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     paddingVertical: 18,
