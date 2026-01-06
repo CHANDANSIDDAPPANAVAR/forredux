@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import BusinessListScreen from './buss/BusinessListScreen';
+import SectionHeading from '../util/heading';
 
 const Buss = () => {
   return (
     <View style={styjcl.maincoby}>
-      <Text>Buss</Text>
+      <SectionHeading title="Business" />
+      <BusinessListScreen />
     </View>
   );
 };

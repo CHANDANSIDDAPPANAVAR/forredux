@@ -2,12 +2,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import DiscoverStack from './parts/discoverstack';
-import BlinkStack from './parts/blinkstack';
-import HomeStack from './parts/homestack';
-import ConnectsStack from './parts/connectsstack';
-import ChatStack from './parts/chatstack';
 import BottomNav from '../util/Bitparts/BottomNav';
+import HomeMain from '../Home/HomeMain';
+import ConnectsHome from '../Connects/connects';
+import Blink from '../Blink/blink';
+import Discover from '../Discover/discover';
+import Chat from '../Chat/chat';
+import Header from '../Home/parts/Heder';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,14 +17,20 @@ const MainTabs = () => {
     <Tab.Navigator
       initialRouteName="HomeTab"
       backBehavior="none"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        header: () => <Header />, // ✅ SAME header for all tabs
+      }}
       tabBar={props => <BottomNav {...props} />}
     >
-      <Tab.Screen name="DiscoverTab" component={DiscoverStack} />
-      <Tab.Screen name="BlinkTab" component={BlinkStack} />
-      <Tab.Screen name="HomeTab" component={HomeStack} />
-      <Tab.Screen name="ConnectsTab" component={ConnectsStack} />
-      <Tab.Screen name="ChatTab" component={ChatStack} />
+      <Tab.Screen name="DiscoverTab" component={Discover} />
+      <Tab.Screen
+        name="BlinkTab"
+        component={Blink}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen name="HomeTab" component={HomeMain} />
+      <Tab.Screen name="ConnectsTab" component={ConnectsHome} />
+      <Tab.Screen name="ChatTab" component={Chat} />
     </Tab.Navigator>
   );
 };

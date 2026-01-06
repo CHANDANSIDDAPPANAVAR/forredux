@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Image,
   Text,
@@ -10,31 +10,40 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const Header = () => {
+const Header = ({ notificationCount = 0 }) => {
   const navigation = useNavigation();
 
+  /* ---------------- NAVIGATION ---------------- */
   const goToNotify = () => {
-    navigation.getParent()?.getParent()?.navigate('NotifyStack');
+    navigation.navigate('NotifyStack');
   };
 
   const goToProfile = () => {
-    navigation.getParent()?.getParent()?.navigate('ProfileStack');
+    navigation.navigate('ProfileStack');
   };
 
+  /* ---------------- RENDER ---------------- */
   return (
     <SafeAreaView edges={['top']} style={styles.header}>
+      {/* LOGO */}
       <Image
         source={require('../../assets/oneconnetrylogo.png')}
         style={styles.logo}
       />
 
+      {/* ACTIONS */}
       <View style={styles.actions}>
         <TouchableOpacity onPress={goToNotify} style={styles.iconWrapper}>
           <Image
             source={require('../../assets/icons/notification.png')}
             style={styles.icon}
           />
-          <Text style={styles.badge}>1</Text>
+
+          {notificationCount > 0 && (
+            <Text style={styles.badge}>
+              {notificationCount > 9 ? '9+' : notificationCount}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={goToProfile} style={styles.iconWrapper}>
@@ -50,12 +59,14 @@ const Header = () => {
 
 export default Header;
 
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: '#f5f5f5f',
+    backgroundColor: '#f5f5f5', // ✅ FIXED
     minHeight: 56,
     paddingVertical: 8,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -87,7 +98,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     backgroundColor: '#f2f2f2',
     borderRadius: 30,
-    marginHorizontal: 5,
+    marginHorizontal: 6,
     padding: 8,
     minWidth: 36,
     minHeight: 36,
@@ -107,13 +118,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 2,
     top: 2,
-    backgroundColor: 'red',
+    backgroundColor: '#E53935',
     color: '#fff',
     fontSize: 10,
     fontWeight: 'bold',
     textAlign: 'center',
     borderRadius: 8,
     minWidth: 16,
-    paddingHorizontal: 3,
+    paddingHorizontal: 4,
+    overflow: 'hidden',
   },
 });

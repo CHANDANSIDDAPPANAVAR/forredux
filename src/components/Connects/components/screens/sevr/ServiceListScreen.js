@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   FlatList,
+  SafeAreaView,
   View,
   Text,
   TouchableOpacity,
@@ -17,8 +18,9 @@ import { resolveMediaUrl } from '../../../../../services/mediaUrl.js';
 
 const PAGE_LIMIT = 10;
 
-const OpenListScreen = () => {
+const ServiceListScreen = () => {
   const { accessToken } = useSelector(state => state.auth);
+
   const [following, setFollowing] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -35,12 +37,11 @@ const OpenListScreen = () => {
   const fetchFollowing = async (pageToFetch = 1, isRefresh = false) => {
     try {
       const res = await api.get(
-        `/api/open/list-following?page=${pageToFetch}&limit=${PAGE_LIMIT}`,
+        `/api/service/list-following?page=${pageToFetch}&limit=${PAGE_LIMIT}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         },
       );
-
       const newData = res.data.following || [];
       const sorted = [...newData].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -57,13 +58,6 @@ const OpenListScreen = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-  const handleOpenChat = (userId, name, profile_image) => {
-    navigation.navigate('ChatScreen', {
-      recipientId: userId,
-      recipientName: name,
-      recipientImage: profile_image,
-    });
   };
   useEffect(() => {
     let cancelled = false;
@@ -91,25 +85,33 @@ const OpenListScreen = () => {
 
   const handleOpenProfile = userId => {
     navigation.navigate('Connects', {
-      screen: 'Followingopen',
+      screen: 'ConnectServiceopen',
       params: { userId },
     });
   };
-
+  const handleOpenChat = (userId, name, profile_image) => {
+    navigation.navigate('ChatScreen', {
+      recipientId: userId,
+      recipientName: name,
+      recipientImage: profile_image,
+    });
+  };
   const renderItem = useCallback(
     ({ item }) => (
       <TouchableOpacity
         style={styles.card}
         onPress={() => handleOpenProfile(item.following_id)}
       >
-        <Image
-          source={
-            item.profile_image
-              ? { uri: resolveImageUrl(item.profile_image) }
-              : require('../../../../assets/choseaccount/assets/noprofile.png')
-          }
-          style={styles.avatar}
-        />
+        <View style={styles.avatarWrapper}>
+          <Image
+            source={
+              item.profile_image
+                ? { uri: resolveImageUrl(item.profile_image) }
+                : require('../../../../assets/choseaccount/assets/noprofile.png')
+            }
+            style={styles.avatar}
+          />
+        </View>
         <View style={styles.dataandchat}>
           <View style={styles.info}>
             <Text style={styles.name}>
@@ -117,11 +119,12 @@ const OpenListScreen = () => {
                 ? item.name.slice(0, 20) + '…'
                 : item.name}
             </Text>
-            {item.namelocation && (
-              <Text style={styles.location}>
-                {item.namelocation.length > 20
-                  ? item.namelocation.slice(0, 20) + '…'
-                  : item.namelocation}
+
+            {item.selected_skills?.length > 0 && (
+              <Text style={styles.skills}>
+                {item.selected_skills.join(', ').length > 35
+                  ? item.selected_skills.join(', ').slice(0, 35) + '…'
+                  : item.selected_skills.join(', ')}
               </Text>
             )}
           </View>
@@ -160,10 +163,10 @@ const OpenListScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FDFDFD' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffffff' }}>
       {loading && page === 1 ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#555" />
+          <ActivityIndicator size="large" color="#444" />
         </View>
       ) : (
         <FlatList
@@ -173,45 +176,42 @@ const OpenListScreen = () => {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.3}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#888"
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           contentContainerStyle={{
             padding: 16,
             paddingBottom: Platform.OS === 'ios' ? 100 : 70,
           }}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No connects found.</Text>
+            <Text style={styles.emptyText}>No connections found.</Text>
           }
           ListFooterComponent={
             hasMore ? (
               <ActivityIndicator
                 size="small"
-                color="#999"
+                color="#888"
                 style={{ margin: 12 }}
               />
             ) : null
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
-export default OpenListScreen;
+export default ServiceListScreen;
 
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
-    padding: 10,
+    padding: 14,
     borderRadius: 16,
-    backgroundColor: 'rgba(243, 243, 243, 1)',
+    backgroundColor: 'rgba(239, 239, 239, 1)',
   },
+
   avatar: {
     width: 50,
     height: 50,
@@ -221,24 +221,32 @@ const styles = StyleSheet.create({
     borderColor: '#d7d7d7ff',
     backgroundColor: '#F2F2F2',
   },
-  info: { justifyContent: 'space-between' },
+  info: {
+    flex: 1,
+  },
   name: {
     fontSize: 16,
     lineHeight: 20,
     fontFamily: 'Poppins-SemiBold',
     color: '#333',
   },
-  location: {
+  skills: {
     fontSize: 13,
     lineHeight: 15,
     fontFamily: 'Poppins-Regular',
     color: '#777',
   },
+  tapHint: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 4,
+    fontFamily: 'Poppins-Italic',
+  },
   emptyText: {
     textAlign: 'center',
     marginTop: 30,
     fontSize: 16,
-    color: '#999',
+    color: '#aaa',
     fontFamily: 'Poppins-Regular',
   },
   centered: {
@@ -251,7 +259,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     resizeMode: 'contain',
-    tintColor: 'rgba(54, 52, 52, 1)',
+    tintColor: 'rgba(6, 6, 6, 0.9)',
   },
   dataandchat: {
     width: '80%',

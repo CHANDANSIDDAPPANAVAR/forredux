@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -9,8 +9,6 @@ import {
   Pressable,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-//import ShareModal from '../../../components/Mainparts/chat/sharecahts/sharechats';
 
 const HeadreBack = ({
   title,
@@ -22,12 +20,16 @@ const HeadreBack = ({
   showUnblock = false,
 }) => {
   const navigation = useNavigation();
+
   const [menuVisible, setMenuVisible] = useState(false);
-  console.log(id);
-  // SHARE STATE
   const [shareVisible, setShareVisible] = useState(false);
   const [shareInitialCaption, setShareInitialCaption] = useState('');
 
+  // 🔑 MENU POSITION STATE
+  const menuBtnRef = useRef(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 12 });
+
+  /* ---------------- BACK ---------------- */
   const onBackPress = () => {
     if (backScreen) {
       navigation.replace(backScreen);
@@ -36,6 +38,7 @@ const HeadreBack = ({
     }
   };
 
+  /* ---------------- SHARE ---------------- */
   const onShareDone = () => {
     setShareVisible(false);
   };
@@ -46,6 +49,18 @@ const HeadreBack = ({
     setShareVisible(true);
   };
 
+  /* ---------------- MENU OPEN (FIXED) ---------------- */
+  const openMenu = () => {
+    menuBtnRef.current?.measureInWindow((x, y, width, height) => {
+      setMenuPos({
+        top: y + height + 6,
+        right: 12,
+      });
+      setMenuVisible(true);
+    });
+  };
+
+  /* ---------------- MENU OPTIONS ---------------- */
   const renderMenuOptions = () => {
     if (showUnblock) {
       return (
@@ -122,8 +137,9 @@ const HeadreBack = ({
   const shouldShowMenu =
     showUnblock || !!onBlockPress || !!onRemoveConnectionPress || !!id;
 
+  /* ---------------- RENDER ---------------- */
   return (
-    <SafeAreaView style={styles.header}>
+    <View style={styles.header}>
       {/* BACK */}
       <TouchableOpacity
         style={styles.backBtn}
@@ -144,8 +160,9 @@ const HeadreBack = ({
       {/* MENU BUTTON */}
       {shouldShowMenu && (
         <TouchableOpacity
+          ref={menuBtnRef}
           style={styles.menuBtn}
-          onPress={() => setMenuVisible(true)}
+          onPress={openMenu}
           activeOpacity={0.7}
         >
           <Image
@@ -163,29 +180,40 @@ const HeadreBack = ({
         onRequestClose={() => setMenuVisible(false)}
       >
         <Pressable
-          style={styles.modalOverlay}
+          style={StyleSheet.absoluteFill}
           onPress={() => setMenuVisible(false)}
         >
-          {/* ⛔ stop press bubbling */}
-          <Pressable onPress={() => {}}>
-            <View style={styles.menuContainer}>{renderMenuOptions()}</View>
-          </Pressable>
+          <View
+            style={[
+              styles.menuContainer,
+              {
+                position: 'absolute',
+                top: menuPos.top,
+                right: menuPos.right,
+              },
+            ]}
+          >
+            {renderMenuOptions()}
+          </View>
         </Pressable>
       </Modal>
 
-      {/* SHARE MODAL *
+      {/* SHARE MODAL (KEEP AS IS IF NEEDED)
       <ShareModal
         visible={shareVisible}
         entityId={id}
         shareType="account"
         initialCaption={shareInitialCaption}
         onDone={onShareDone}
-      />*/}
-    </SafeAreaView>
+      />
+      */}
+    </View>
   );
 };
 
 export default HeadreBack;
+
+/* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
   header: {
@@ -193,11 +221,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ffffff',
     paddingHorizontal: 12,
-    paddingVertical: 1,
+    paddingVertical: 6,
     borderBottomWidth: 1,
     borderColor: '#f0f0f0',
   },
-  backBtn: { padding: 4 },
+  backBtn: {
+    padding: 4,
+  },
   backIcon: {
     width: 24,
     height: 24,
@@ -219,20 +249,12 @@ const styles = StyleSheet.create({
     height: 20,
     tintColor: '#2E2B2B',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-    paddingTop: 60,
-    paddingRight: 15,
-  },
   menuContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
     minWidth: 180,
-    paddingVertical: 1,
-    paddingHorizontal: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,

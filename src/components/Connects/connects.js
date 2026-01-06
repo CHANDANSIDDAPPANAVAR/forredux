@@ -8,18 +8,15 @@ import Service from './components/screens/Serveice';
 import Event from './components/screens/Event';
 import Open from './components/screens/Genral';
 import ConnectsNavbar from './navigation/navbarconnects';
+import useAndroidBackHandler from '../navigation/util/useBackToHome';
 
 const ConnectsHome = () => {
   const navigation = useNavigation();
   const [active, setActive] = useState('Genral');
 
-  useEffect(() => {
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      navigation.getParent()?.navigate('HomeTab');
-      return true;
-    });
-    return () => sub.remove();
-  }, [navigation]);
+  useAndroidBackHandler(() => {
+    navigation.navigate('HomeTab');
+  });
 
   const renderScreen = () => {
     switch (active) {
