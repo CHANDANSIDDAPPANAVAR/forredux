@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -17,12 +17,26 @@ import PdfViewerModal from './PdfViewerModal';
    Helpers
 ---------------------------- */
 const isLocalFile = uri =>
-  uri?.startsWith('file://') || uri?.startsWith('content://');
+  typeof uri === 'string' &&
+  (uri.startsWith('file://') || uri.startsWith('content://'));
+
+const normalizeDocuments = docs =>
+  Array.isArray(docs)
+    ? docs.filter(
+        d =>
+          d &&
+          (typeof d === 'string' ||
+            typeof d?.url === 'string' ||
+            isLocalFile(d)),
+      )
+    : [];
 
 /* ---------------------------
    Component
 ---------------------------- */
-const DocumentsSection = ({ documents = [] }) => {
+const DocumentsSection = ({ documents }) => {
+  const safeDocuments = normalizeDocuments(documents);
+
   const [visible, setVisible] = useState(false);
   const [pdfUri, setPdfUri] = useState(null);
   const [docTitle, setDocTitle] = useState('');
@@ -57,7 +71,8 @@ const DocumentsSection = ({ documents = [] }) => {
 
         const localPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
 
-        if (!(await RNFS.exists(localPath))) {
+        const exists = await RNFS.exists(localPath);
+        if (!exists) {
           await RNBlobUtil.config({
             fileCache: true,
             path: localPath,
@@ -75,13 +90,14 @@ const DocumentsSection = ({ documents = [] }) => {
     [loading],
   );
 
-  if (!documents.length) {
-    return <View style={{ height: 1 }} />;
+  /* ❌ Render nothing if no valid documents */
+  if (safeDocuments.length === 0) {
+    return null;
   }
 
   return (
     <View style={styles.container}>
-      {documents.map((doc, index) => (
+      {safeDocuments.map((doc, index) => (
         <TouchableOpacity
           key={index}
           style={styles.item}
@@ -95,7 +111,7 @@ const DocumentsSection = ({ documents = [] }) => {
               style={styles.icon}
             />
             <Text style={styles.text} numberOfLines={1}>
-              {doc.displayName || doc.name || 'Document'}
+              {doc?.displayName || doc?.name || 'Document'}
             </Text>
           </View>
         </TouchableOpacity>
@@ -116,7 +132,7 @@ const DocumentsSection = ({ documents = [] }) => {
   );
 };
 
-export default React.memo(DocumentsSection);
+export default memo(DocumentsSection);
 
 /* ---------------------------
    Styles
@@ -132,7 +148,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 10,
     marginVertical: 10,
-
     justifyContent: 'center',
   },
 

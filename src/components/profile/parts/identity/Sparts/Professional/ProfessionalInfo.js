@@ -9,33 +9,53 @@ const capitalizeFirst = text => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
+const safeArray = value => (Array.isArray(value) ? value : []);
+
 /* ----------------------------------
    COMPONENT
 ----------------------------------- */
 const ProfessionalInfo = ({
-  professionalAreas = [],
-  experience = '',
-  certifications = [],
-  companyName = '',
+  professionalAreas,
+  experience,
+  certifications,
+  companyName,
 }) => {
-  const { formattedAreas, formattedCertifications, hasData } = useMemo(() => {
-    const areas = professionalAreas
-      .filter(a => typeof a === 'string' && a.trim())
+  const {
+    formattedAreas,
+    formattedCertifications,
+    hasData,
+    expValue,
+    company,
+  } = useMemo(() => {
+    const areas = safeArray(professionalAreas)
+      .filter(item => typeof item === 'string' && item.trim())
       .map(capitalizeFirst)
       .join(', ');
 
-    const certs = certifications
-      .filter(c => typeof c === 'string' && c.trim())
+    const certs = safeArray(certifications)
+      .filter(item => typeof item === 'string' && item.trim())
       .join(', ');
+
+    const exp =
+      typeof experience === 'string' || typeof experience === 'number'
+        ? String(experience).trim()
+        : '';
+
+    const comp = typeof companyName === 'string' ? companyName.trim() : '';
 
     return {
       formattedAreas: areas,
       formattedCertifications: certs,
-      hasData: !!areas || !!experience || !!certs || !!companyName,
+      expValue: exp,
+      company: comp,
+      hasData: !!areas || !!exp || !!certs || !!comp,
     };
   }, [professionalAreas, certifications, experience, companyName]);
 
-  if (!hasData) return null;
+  /* ❌ Render nothing if no valid data */
+  if (!hasData) {
+    return null;
+  }
 
   return (
     <View style={styles.card}>
@@ -43,10 +63,10 @@ const ProfessionalInfo = ({
         <InfoItem label="Professional Areas" value={formattedAreas} />
       )}
 
-      {!!experience && (
+      {!!expValue && (
         <InfoItem
           label="Experience"
-          value={`${experience} ${experience === '1' ? 'Year' : 'Years'}`}
+          value={`${expValue} ${expValue === '1' ? 'Year' : 'Years'}`}
         />
       )}
 
@@ -57,8 +77,8 @@ const ProfessionalInfo = ({
         />
       )}
 
-      {!!companyName && (
-        <InfoItem label="Company / Business / Institute" value={companyName} />
+      {!!company && (
+        <InfoItem label="Company / Business / Institute" value={company} />
       )}
     </View>
   );
@@ -69,17 +89,17 @@ export default memo(ProfessionalInfo);
 /* ----------------------------------
    SUB COMPONENT
 ----------------------------------- */
-const InfoItem = ({ label, value }) => {
+const InfoItem = memo(({ label, value }) => {
   return (
     <View style={styles.item}>
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value}>{value}</Text>
     </View>
   );
-};
+});
 
 /* ----------------------------------
-   STYLES (IMPROVED UI)
+   STYLES
 ----------------------------------- */
 const styles = StyleSheet.create({
   card: {

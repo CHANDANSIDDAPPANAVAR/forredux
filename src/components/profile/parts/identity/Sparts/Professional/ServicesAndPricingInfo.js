@@ -5,17 +5,19 @@ import { View, Text, StyleSheet } from 'react-native';
    UTILS
 ----------------------------------- */
 const capitalizeFirst = text => {
-  if (typeof text !== 'string') return '';
+  if (typeof text !== 'string' || !text) return '';
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+const safeString = value => (typeof value === 'string' ? value.trim() : '');
 
 /* ----------------------------------
    COMPONENT
 ----------------------------------- */
-const ServicesAndPricingInfo = ({ services = '', pricing = '' }) => {
+const ServicesAndPricingInfo = ({ services, pricing }) => {
   const { formattedServices, formattedPricing, hasData } = useMemo(() => {
-    const s = capitalizeFirst(services.trim());
-    const p = pricing?.trim();
+    const s = capitalizeFirst(safeString(services));
+    const p = safeString(pricing);
 
     return {
       formattedServices: s,
@@ -24,6 +26,7 @@ const ServicesAndPricingInfo = ({ services = '', pricing = '' }) => {
     };
   }, [services, pricing]);
 
+  /* ❌ Render nothing if no valid data */
   if (!hasData) {
     return null;
   }
@@ -46,14 +49,14 @@ export default memo(ServicesAndPricingInfo);
 /* ----------------------------------
    SUB COMPONENT
 ----------------------------------- */
-const InfoBlock = ({ label, value }) => {
+const InfoBlock = memo(({ label, value }) => {
   return (
     <View style={styles.section}>
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value}>{value}</Text>
     </View>
   );
-};
+});
 
 /* ----------------------------------
    STYLES

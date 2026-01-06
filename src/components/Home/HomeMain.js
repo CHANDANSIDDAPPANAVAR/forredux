@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, BackHandler, Platform, ToastAndroid } from 'react-native';
 import useAndroidBackHandler from '../navigation/util/useBackToHome';
+import QRCard from './center/centercard';
 
 const HomeMain = () => {
   const lastBackPress = useRef(0);
@@ -16,11 +17,7 @@ const HomeMain = () => {
     }
   });
 
-  return (
-    <View>
-      <Text>Home</Text>
-    </View>
-  );
+  return <QRCard />;
 };
 
 export default HomeMain;

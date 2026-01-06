@@ -76,13 +76,6 @@ export const logoutThunk = () => async dispatch => {
     console.warn('LOGOUT CLEANUP ERROR:', err.message);
   } finally {
     dispatch(authLogout());
-
-    navigationRef.current?.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      }),
-    );
   }
 };
 
@@ -106,13 +99,6 @@ export const currentLogoutThunk = () => async (dispatch, getState) => {
     await AsyncStorage.clear();
     await clearTokens();
     dispatch(authLogout());
-
-    navigationRef.current?.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      }),
-    );
   }
 };
 
@@ -146,13 +132,6 @@ export const logoutAllThunk = () => async (dispatch, getState) => {
     await AsyncStorage.clear();
     await clearTokens();
     dispatch(authLogout());
-
-    navigationRef.current?.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      }),
-    );
 
     console.log('🔴 Navigation reset to Auth');
   }

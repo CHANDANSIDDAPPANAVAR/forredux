@@ -1,22 +1,47 @@
-import React from 'react';
-import { View } from 'react-native';
+// Connects/ConnectsHome.js
+import React, { useState, useEffect } from 'react';
+import { View, BackHandler } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import useAndroidBackHandler from '../navigation/util/useBackToHome'; // if you still want it
-import ConMainLayout from './layout/connactsmainlay';
+import Buss from './components/screens/Buss';
+import Proff from './components/screens/Proff';
+import Service from './components/screens/Serveice';
+import Event from './components/screens/Event';
+import Open from './components/screens/Genral';
+import ConnectsNavbar from './navigation/navbarconnects';
 
-const Connects = () => {
+const ConnectsHome = () => {
   const navigation = useNavigation();
+  const [active, setActive] = useState('Genral');
 
-  // Optional: extra safety if you keep the custom hook
-  useAndroidBackHandler(() => {
-    navigation.navigate('HomeTab');
-  });
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      navigation.getParent()?.navigate('HomeTab');
+      return true;
+    });
+    return () => sub.remove();
+  }, [navigation]);
+
+  const renderScreen = () => {
+    switch (active) {
+      case 'Buss':
+        return <Buss />;
+      case 'Proff':
+        return <Proff />;
+      case 'Service':
+        return <Service />;
+      case 'Events':
+        return <Event />;
+      default:
+        return <Open />;
+    }
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <ConMainLayout />
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ConnectsNavbar active={active} onChange={setActive} />
+      <View style={{ flex: 1 }}>{renderScreen()}</View>
     </View>
   );
 };
 
-export default Connects;
+export default ConnectsHome;

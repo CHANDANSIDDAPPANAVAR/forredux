@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   ScrollView,
   Pressable,
-  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -72,14 +71,19 @@ export default function ChooseAccountType() {
 
   const { userAccountType } = useSelector(state => state.auth);
 
-  const [selectedType, setSelectedType] = useState(userAccountType);
+  const [selectedType, setSelectedType] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
+  useEffect(() => {
+    if (userAccountType) {
+      setSelectedType(userAccountType);
+    }
+  }, [userAccountType]);
+
   /* 🧹 Kill keyboard + iOS responder bugs */
   useEffect(() => {
-    Keyboard.dismiss();
-
     runAfterInteraction(() => {
       dispatch(syncAccountTypeThunk());
     });
@@ -106,11 +110,7 @@ export default function ChooseAccountType() {
   return (
     <SafeAreaView style={styles.safe}>
       <Regheader />
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="always"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.container}>
         {/* HEADER */}
         <Text style={styles.heading}>Choose your account type</Text>
         <Text style={styles.subheading}>
@@ -125,8 +125,8 @@ export default function ChooseAccountType() {
             return (
               <Pressable
                 key={item.key}
+                onPressIn={() => {}}
                 onPress={() => setSelectedType(item.key)}
-                android_ripple={{ color: '#E5E7EB' }}
                 style={[
                   styles.card,
                   selectedType === item.key && {
@@ -145,6 +145,7 @@ export default function ChooseAccountType() {
 
         {/* CONTINUE BUTTON */}
         <Pressable
+          onPressIn={() => {}}
           onPress={() => {
             if (!selectedType || loading) return;
             setConfirmVisible(true);
@@ -153,7 +154,6 @@ export default function ChooseAccountType() {
             styles.confirmBtn,
             (!selectedType || loading) && styles.disabledBtn,
           ]}
-          android_ripple={{ color: '#E5E7EB' }} // <-- Add this line
         >
           {loading ? (
             <ActivityIndicator color="#FFFFFF" />
@@ -161,7 +161,7 @@ export default function ChooseAccountType() {
             <Text style={styles.confirmText}>Continue</Text>
           )}
         </Pressable>
-      </ScrollView>
+      </View>
 
       {/* CONFIRM MODAL */}
       {confirmVisible && (

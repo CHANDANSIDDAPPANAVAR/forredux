@@ -5,22 +5,23 @@ import { View, Text, StyleSheet } from 'react-native';
    UTILS
 ----------------------------------- */
 const capitalizeFirst = text => {
-  if (typeof text !== 'string') {
-    return '';
-  }
+  if (typeof text !== 'string') return '';
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
+
+const safeArray = value => (Array.isArray(value) ? value : []);
 
 /* ----------------------------------
    COMPONENT
 ----------------------------------- */
-const SelectedKeywordsInfo = ({ keywords = [] }) => {
+const SelectedKeywordsInfo = ({ keywords }) => {
   const formattedKeywords = useMemo(() => {
-    return keywords
-      .filter(k => typeof k === 'string' && k.trim().length > 0)
-      .map(capitalizeFirst);
+    return safeArray(keywords)
+      .filter(k => typeof k === 'string' && k.trim())
+      .map(k => capitalizeFirst(k.trim()));
   }, [keywords]);
 
+  /* ❌ Render nothing if no valid keywords */
   if (formattedKeywords.length === 0) {
     return null;
   }
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10, // works in modern RN
+    gap: 10,
   },
 
   pill: {

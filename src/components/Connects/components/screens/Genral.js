@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import SectionHeading from '../util/heading';
+import OpenListScreen from './Genral/ConnectListScreen';
 
 const Open = () => {
   return (
     <View style={styjcl.maincoby}>
-      <Text>Genral</Text>
+      <SectionHeading title={'Open Network'} />
+      <OpenListScreen />
     </View>
   );
 };

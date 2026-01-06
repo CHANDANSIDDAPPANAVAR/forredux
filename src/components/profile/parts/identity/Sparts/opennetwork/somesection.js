@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -83,33 +83,40 @@ const socialPlatforms = {
 };
 
 /* ----------------------------------
+   Helpers
+----------------------------------- */
+const normalizeAccounts = data =>
+  data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+
+/* ----------------------------------
    Component
 ----------------------------------- */
-const SocialLinksGrid = ({ socialAccounts = {} }) => {
+const SocialLinksGrid = ({ socialAccounts }) => {
+  const safeAccounts = normalizeAccounts(socialAccounts);
+
   const validItems = useMemo(() => {
     return Object.keys(socialPlatforms).filter(key => {
-      const value = socialAccounts[key];
+      const value = safeAccounts[key];
       const platform = socialPlatforms[key];
 
-      if (!value || value.trim() === '') return false;
+      if (typeof value !== 'string') return false;
+      if (value.trim() === '') return false;
       if (platform.validate && !platform.validate(value)) return false;
 
       return true;
     });
-  }, [socialAccounts]);
+  }, [safeAccounts]);
 
-  if (validItems.length === 0) return null;
-
-  const openLink = async (platformKey, value) => {
+  const openLink = useCallback(async (platformKey, value) => {
     const platform = socialPlatforms[platformKey];
 
     try {
-      let appUrl = null;
-      let webUrl = null;
+      let appUrl;
+      let webUrl;
 
       if (platform.getUrl) {
         webUrl = platform.getUrl(value);
-      } else if (platform.appUrl || platform.webUrl) {
+      } else {
         appUrl = platform.appUrl?.(value);
         webUrl = platform.webUrl?.(value);
       }
@@ -119,13 +126,17 @@ const SocialLinksGrid = ({ socialAccounts = {} }) => {
       } else if (webUrl) {
         await Linking.openURL(webUrl);
       } else {
-        throw new Error('No valid URL');
+        throw new Error('Invalid URL');
       }
-    } catch (err) {
-      console.warn(err);
-      Alert.alert('Error', `Unable to open ${platform.label}`);
+    } catch {
+      Alert.alert('Unable to open link', platform.label);
     }
-  };
+  }, []);
+
+  /* ❌ Render nothing if no valid links */
+  if (validItems.length === 0) {
+    return null;
+  }
 
   return (
     <View style={styles.grid}>
@@ -134,7 +145,7 @@ const SocialLinksGrid = ({ socialAccounts = {} }) => {
           key={key}
           style={styles.gridItem}
           activeOpacity={0.85}
-          onPress={() => openLink(key, socialAccounts[key])}
+          onPress={() => openLink(key, safeAccounts[key])}
           accessibilityLabel={`Open ${socialPlatforms[key].label}`}
         >
           <Image source={socialPlatforms[key].icon} style={styles.icon} />
