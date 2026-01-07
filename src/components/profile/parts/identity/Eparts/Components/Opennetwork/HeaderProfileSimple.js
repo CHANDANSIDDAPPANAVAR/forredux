@@ -9,13 +9,7 @@ import {
   Platform,
 } from 'react-native';
 
-const Headerprofile = ({
-  title = '',
-  openPress,
-  isPro,
-  backScreen,
-  showEdit = true,
-}) => {
+const HeaderProfileSimple = ({ title = '', backScreen }) => {
   const navigation = useNavigation();
 
   const onBackPress = () => {
@@ -23,13 +17,6 @@ const Headerprofile = ({
       navigation.replace(backScreen);
     } else {
       navigation.goBack();
-    }
-  };
-
-  const onEditPress = () => {
-    console.log(openPress);
-    if (openPress) {
-      navigation.navigate(openPress);
     }
   };
 
@@ -43,7 +30,7 @@ const Headerprofile = ({
         style={styles.sideBtn}
       >
         <Image
-          source={require('../../../../../assets/icons/back-left.png')}
+          source={require('../../../../../../assets/icons/back-left.png')}
           style={styles.backIcon}
         />
       </TouchableOpacity>
@@ -55,23 +42,13 @@ const Headerprofile = ({
         </Text>
       </View>
 
-      {/* RIGHT (EDIT) */}
-      <View style={styles.sideBtn}>
-        {showEdit && (
-          <TouchableOpacity
-            onPress={onEditPress}
-            activeOpacity={0.7}
-            hitSlop={HIT_SLOP}
-          >
-            <Text style={styles.editText}>Edit</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      {/* RIGHT PLACEHOLDER (keeps title centered) */}
+      <View style={styles.sideBtn} />
     </View>
   );
 };
 
-export default React.memo(Headerprofile);
+export default React.memo(HeaderProfileSimple);
 
 const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 
@@ -121,11 +98,5 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontFamily: 'Poppins-SemiBold',
     letterSpacing: 0.2,
-  },
-
-  editText: {
-    fontSize: 15,
-    color: '#2563EB',
-    fontFamily: 'Poppins-Medium',
   },
 });
