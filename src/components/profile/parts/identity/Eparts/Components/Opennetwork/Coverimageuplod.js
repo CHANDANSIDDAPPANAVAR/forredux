@@ -53,18 +53,28 @@ const CoverImagePicker = ({ coverImage, setCoverImage }) => {
   const pickCoverImage = async () => {
     try {
       const image = await ImagePicker.openPicker({
-        width: 600,
-        height: 400,
+        mediaType: 'photo',
         cropping: true,
 
+        // 🔒 LOCKED crop ratio + output size
+        width: 600,
+        height: 400,
+
+        // 🎯 Compression (looks uncompressed)
+        compressImageQuality: 1,
+
+        // 🍎 iOS safety (HEIC → JPG)
+        forceJpg: true,
+
         cropperToolbarTitle: 'Crop Cover Photo',
-        mediaType: 'photo',
       });
+
+      if (!image?.path) return;
 
       setCoverImage(image.path);
       setShowDelete(false);
     } catch {
-      // cancelled
+      // user cancelled → silent
     }
   };
 
@@ -152,7 +162,7 @@ const styles = StyleSheet.create({
   editIconTop: {
     position: 'absolute',
     right: 14,
-    bottom: 14,
+    top: 14,
     backgroundColor: '#e9e9e9ff',
     borderRadius: 10,
     padding: 6,

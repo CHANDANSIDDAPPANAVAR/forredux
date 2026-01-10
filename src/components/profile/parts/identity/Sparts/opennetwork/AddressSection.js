@@ -32,14 +32,14 @@ const AddressSection = ({ pickedAddress, pickedLocation }) => {
 
     try {
       if (Platform.OS === 'ios') {
-        const appleMapsUrl = `maps://?q=${latitude},${longitude}`;
         const googleMapsAppUrl = `comgooglemaps://?q=${latitude},${longitude}`;
+        const appleMapsUrl = `maps://?q=${latitude},${longitude}`;
         const googleMapsWebUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
-        if (await Linking.canOpenURL(appleMapsUrl)) {
-          await Linking.openURL(appleMapsUrl);
-        } else if (await Linking.canOpenURL(googleMapsAppUrl)) {
+        if (await Linking.canOpenURL(googleMapsAppUrl)) {
           await Linking.openURL(googleMapsAppUrl);
+        } else if (await Linking.canOpenURL(appleMapsUrl)) {
+          await Linking.openURL(appleMapsUrl);
         } else {
           await Linking.openURL(googleMapsWebUrl);
         }
