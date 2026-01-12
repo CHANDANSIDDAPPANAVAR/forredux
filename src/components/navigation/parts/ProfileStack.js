@@ -32,7 +32,7 @@ const ProfileStack = () => {
       <Stack.Screen name="Settings" component={Settings} />
       <Stack.Screen name="Support" component={Support} />
       <Stack.Screen name="Orders" component={Order} />
-      <Stack.Screen name="Fopen" component={Eopen} />
+      <Stack.Screen name="Eopen" component={Eopen} />
       <Stack.Screen name="Ebuss" component={Ebuss} />
       <Stack.Screen name="Eproff" component={Eproff} />
       <Stack.Screen name="Eserv" component={Eserv} />

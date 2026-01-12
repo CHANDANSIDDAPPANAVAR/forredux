@@ -86,6 +86,7 @@ const Eopen = () => {
     setPickedLocation(location);
     setModalVisible(false);
   }, []);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Load profile (only once)
   useEffect(() => {
@@ -275,10 +276,12 @@ const Eopen = () => {
       await saveProfileToCache(res.data);
       await saveLastUpdatedToCache(res.data.updated_at);
 
+      setIsSuccess(true);
       setAlertTitle('Success');
       setAlertMessage('Profile updated successfully ✓');
       setAlertVisible(true);
     } catch (err) {
+      setIsSuccess(false);
       setAlertTitle('Error');
       setAlertMessage(
         err?.response?.data?.message || 'Failed to update profile',
@@ -417,7 +420,13 @@ const Eopen = () => {
           visible={alertVisible}
           title={alertTitle}
           message={alertMessage}
-          onConfirm={() => setAlertVisible(false)}
+          onConfirm={() => {
+            setAlertVisible(false);
+
+            if (isSuccess) {
+              navigation.replace('Profile'); // 👈 target screen name
+            }
+          }}
           onCancel={() => setAlertVisible(false)}
         />
       </KeyboardAvoidingView>

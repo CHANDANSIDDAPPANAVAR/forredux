@@ -78,11 +78,13 @@ const Profprofile = ({ profileSrc, gender, birthYear }) => {
         activeOpacity={0.9}
         onPress={() => resolvedImageUri && setShowModal(true)}
       >
-        <Image
-          source={imageSource}
-          style={styles.profileImage}
-          resizeMode="cover"
-        />
+        <View style={styles.borderWrapper}>
+          <Image
+            source={imageSource}
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
+        </View>
       </TouchableOpacity>
 
       {/* GENDER & AGE */}
@@ -119,24 +121,34 @@ const Profprofile = ({ profileSrc, gender, birthYear }) => {
 };
 
 export default memo(Profprofile);
+const IMAGE_SIZE = 190;
+const BORDER_SIZE = 6;
 
-/* ----------------------------------
-   STYLES
------------------------------------ */
 const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
-    marginTop: -80,
+    marginTop: -100,
   },
 
+  /* OUTER BORDER */
+  borderWrapper: {
+    width: IMAGE_SIZE + BORDER_SIZE * 2,
+    height: IMAGE_SIZE + BORDER_SIZE * 2,
+    borderRadius: (IMAGE_SIZE + BORDER_SIZE * 2) / 2,
+    borderWidth: BORDER_SIZE,
+    borderColor: 'rgb(188, 186, 186)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+
+  /* IMAGE HOLDER */
   profileImage: {
-    width: 195,
-    height: 195,
-    borderRadius: 100,
-    borderWidth: 6,
-    borderColor: 'rgb(194, 194, 194)',
-    backgroundColor: '#eaeaea',
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+    borderRadius: IMAGE_SIZE / 2,
+    backgroundColor: '#ccc',
   },
 
   infoRow: {

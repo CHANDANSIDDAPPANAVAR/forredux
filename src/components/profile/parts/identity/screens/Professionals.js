@@ -49,7 +49,7 @@ const Professionals = ({ isPro }) => {
     <SafeAreaView>
       <Hederprofile
         title="My Professional Identity"
-        openPress="Ebuss"
+        openPress="Eproff"
         isPro={isPro}
         backScreen="Profile"
       />

@@ -256,14 +256,14 @@ const styles = StyleSheet.create({
 
   avatarFloating: {
     position: 'absolute',
-    top: -75,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+    top: -95,
+    width: 190,
+    height: 190,
+    borderRadius: 100,
     overflow: 'hidden',
     backgroundColor: '#f3f4f6',
-    borderWidth: 3,
-    borderColor: '#ffffff',
+    borderWidth: 6,
+    borderColor: 'rgb(188, 186, 186)',
 
     shadowColor: '#000',
     shadowOpacity: 0.18,
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#0f172a',
-    marginTop: 20,
+    marginTop: 30,
   },
 
   tagline: {

@@ -9,11 +9,10 @@ import {
   Platform,
   Animated,
   Modal,
-  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import CustomButton from './coustombutton';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 const CARD_HORIZONTAL_PADDING = 16;
 const CARD_BORDER_RADIUS = 16;

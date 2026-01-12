@@ -42,7 +42,7 @@ const Opennetwork = ({ isPro }) => {
     <SafeAreaView style={styles.container}>
       <Hederprofile
         title="My Identity"
-        openPress="Fopen"
+        openPress="Eopen"
         isPro={isPro}
         backScreen="Profile"
       />

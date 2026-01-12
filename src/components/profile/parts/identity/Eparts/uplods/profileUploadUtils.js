@@ -172,12 +172,11 @@ export const uploadFile = async (file, type, accessToken) => {
 
 // Document normalizer
 export const normalizeDocuments = (docs = []) => {
-  if (!Array.isArray(docs)) {
-    return [];
-  }
+  if (!Array.isArray(docs)) return [];
+
   return docs.map(doc => ({
-    name: doc.displayName || doc.name || 'Untitled',
     url: doc.url || doc.uri,
+    name: doc.name ?? doc.displayName ?? '',
   }));
 };
 
@@ -192,8 +191,7 @@ export const handleDocumentUploads = async (docs = [], type, accessToken) => {
 
   for (const doc of docs) {
     const isLocal = isLocalFile(doc);
-    const name =
-      doc?.displayName || doc?.name || doc?.uri?.split('/').pop() || 'Untitled';
+    const name = doc?.name ?? doc?.displayName ?? '';
 
     if (isLocal) {
       const url = await uploadFile(doc, type, accessToken);
@@ -213,6 +211,20 @@ export const handleDocumentUploads = async (docs = [], type, accessToken) => {
 
 // Deep equality checker (used for diff)
 export const deepEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+export const areDocumentsEqual = (a = [], b = []) => {
+  if (a.length !== b.length) return false;
+
+  const mapA = new Map(a.map(d => [d.url, d.name || '']));
+  const mapB = new Map(b.map(d => [d.url, d.name || '']));
+
+  for (const [url, name] of mapA) {
+    if (!mapB.has(url)) return false;
+    if (mapB.get(url) !== name) return false;
+  }
+
+  return true;
+};
 
 // Build update payload (compare with original)
 export const buildProfileUpdatePayload = ({
@@ -313,7 +325,8 @@ export const buildProfileUpdatePayload = ({
     const normalizedOriginalDocs = normalizeDocuments(
       originalProfile?.documents,
     );
-    if (!deepEqual(normalizedOriginalDocs, uploadedDocs)) {
+
+    if (!areDocumentsEqual(normalizedOriginalDocs, uploadedDocs)) {
       updates.documents = uploadedDocs;
     }
   }

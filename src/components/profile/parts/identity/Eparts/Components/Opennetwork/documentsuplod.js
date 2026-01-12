@@ -196,10 +196,27 @@ export default function ProfileFileScreen({
           <TextInput
             style={styles.input}
             value={docName}
-            onChangeText={text => setDocName(text.slice(0, 30))}
             maxLength={30}
             autoCapitalize="words"
+            onChangeText={text => {
+              const cleaned = text.slice(0, 30);
+              setDocName(cleaned);
+
+              setFile(prev => {
+                if (!prev) return prev;
+
+                const updated = {
+                  ...prev,
+                  name: cleaned,
+                  displayName: cleaned,
+                };
+
+                onFilesPicked?.([updated]);
+                return updated;
+              });
+            }}
           />
+
           <Text style={styles.counter}>
             {30 - docName.length} characters left
           </Text>
