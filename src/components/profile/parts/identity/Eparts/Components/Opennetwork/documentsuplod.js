@@ -28,6 +28,7 @@ const PDF_HEIGHT = SCREEN_HEIGHT * 0.9;
 /* -------------------------
    Helpers
 -------------------------- */
+
 const cleanDocName = (name = '') =>
   name
     .replace(/\.pdf$/i, '')
@@ -37,16 +38,22 @@ const cleanDocName = (name = '') =>
     .slice(0, 30);
 
 const normalizeFile = doc => {
-  if (!doc) return null;
+  if (!doc || (!doc.uri && !doc.url)) return null;
 
   return {
-    name: doc.name,
+    name: doc.name || doc.displayName || 'Document',
     uri: doc.uri || doc.url,
     url: doc.url || doc.uri,
     type: doc.type || 'application/pdf',
-    displayName: doc.displayName || cleanDocName(doc.name),
+    displayName:
+      doc.displayName ||
+      cleanDocName(doc.name || doc.displayName || 'Document'),
   };
 };
+
+/* -------------------------
+   Component
+-------------------------- */
 
 export default function ProfileFileScreen({
   onFilesPicked,
@@ -59,14 +66,33 @@ export default function ProfileFileScreen({
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [pdfUri, setPdfUri] = useState('');
-
-  /* -------------------------
-     Init (backend file)
+  console.log(initialFile);
+  /* -------------------consol------
+     Sync backend value
   -------------------------- */
   useEffect(() => {
-    if (!initialFile) return;
-    console.log(initialFile);
-    const normalized = normalizeFile(initialFile);
+    if (!initialFile) {
+      setFile(null);
+      setDocName('');
+      return;
+    }
+
+    // ✅ Handle array OR object
+    const doc = Array.isArray(initialFile) ? initialFile[0] : initialFile;
+
+    if (!doc) {
+      setFile(null);
+      setDocName('');
+      return;
+    }
+
+    const normalized = normalizeFile(doc);
+    if (!normalized) {
+      setFile(null);
+      setDocName('');
+      return;
+    }
+
     setFile(normalized);
     setDocName(normalized.displayName);
   }, [initialFile]);
@@ -97,10 +123,14 @@ export default function ProfileFileScreen({
       }
 
       const normalized = normalizeFile(picked);
+      if (!normalized) return;
 
       setFile(normalized);
-      setDocName(prev => (prev ? prev : normalized.displayName));
-      onFilesPicked?.(normalized);
+      setDocName(normalized.displayName);
+
+      // ✅ ALWAYS SEND ARRAY
+      onFilesPicked?.([normalized]);
+
       showToast('Document added');
     } catch (err) {
       if (
@@ -152,22 +182,29 @@ export default function ProfileFileScreen({
     }
   };
 
+  /* -------------------------
+     Render
+  -------------------------- */
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Documents</Text>
       <Text style={styles.subtitle}>{augtitle} (PDF only, max 4 MB)</Text>
 
-      <Text style={styles.label}>Document name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="e.g. Resume, Company Profile"
-        value={docName}
-        onChangeText={text => setDocName(text.slice(0, 30))}
-        maxLength={30}
-        autoCapitalize="words"
-      />
-
-      <Text style={styles.counter}>{30 - docName.length} characters left</Text>
+      {file && (
+        <>
+          <Text style={styles.label}>Document name</Text>
+          <TextInput
+            style={styles.input}
+            value={docName}
+            onChangeText={text => setDocName(text.slice(0, 30))}
+            maxLength={30}
+            autoCapitalize="words"
+          />
+          <Text style={styles.counter}>
+            {30 - docName.length} characters left
+          </Text>
+        </>
+      )}
 
       {!file && !loading && (
         <Text style={styles.helperText}>Select a PDF document to attach</Text>
@@ -210,13 +247,16 @@ export default function ProfileFileScreen({
         onConfirm={() => {
           setFile(null);
           setDocName('');
-          onFilesPicked?.(null);
+
+          // ✅ ALWAYS SEND EMPTY ARRAY
+          onFilesPicked?.([]);
+
           showToast('Document removed');
           setConfirmVisible(false);
         }}
       />
 
-      {/* PDF Preview – 90% height */}
+      {/* PDF Preview */}
       <Modal
         visible={showPdfViewer}
         transparent
@@ -246,6 +286,10 @@ export default function ProfileFileScreen({
     </View>
   );
 }
+
+/* -------------------------
+   Styles
+-------------------------- */
 
 const styles = StyleSheet.create({
   container: { marginBottom: 24 },

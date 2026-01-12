@@ -5,6 +5,9 @@ import {
   StyleSheet,
   View,
   Platform,
+  TouchableOpacity,
+  ActivityIndicator,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -23,17 +26,37 @@ import ProfileDocumentUpload from './Components/Opennetwork/documentsuplod';
 
 import { fetchAndCacheProfile } from '../profilestore/Fechprofiledata';
 import SocialMediaInputs from './Components/Opennetwork/someinput';
-
 import CustomLinksInput from './Components/Opennetwork/costoumlink';
 import LocationSection from './Components/Opennetwork/LocationSection';
 import UpiInput from './Components/Opennetwork/UpiInput';
 import LocationInput from './Components/Opennetwork/LocationInput';
 
+import api from '../../../../../services/api';
+import {
+  saveProfileToCache,
+  saveLastUpdatedToCache,
+} from '../profilestore/Asystore';
+import {
+  uploadFile,
+  handleDocumentUploads,
+  buildProfileUpdatePayload,
+  normalizeDocuments,
+  isLocalFile,
+  UploadTypes,
+} from './uplods/profileUploadUtils';
+import ConfirmModal from '../../../../util/alerts/ConfirmModal';
+
 const Eopen = () => {
   const navigation = useNavigation();
   const { accessToken } = useSelector(state => state.auth);
 
+  const [loading, setLoading] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
   const [hydrated, setHydrated] = useState(false);
+  const [originalProfile, setOriginalProfile] = useState(null);
 
   const [coverImage, setCoverImage] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
@@ -49,24 +72,22 @@ const Eopen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [emergencyNumber, setEmergencyNumber] = useState('');
-  const [document, setDocument] = useState(null);
+  const [documents, setDocuments] = useState([]); // ← always array
+
   const [socialAccounts, setSocialAccounts] = useState({});
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
-  const [socialHydrated, setSocialHydrated] = useState(false);
   const [customLinks, setCustomLinks] = useState([]);
   const [pickedLocation, setPickedLocation] = useState(null);
   const [pickedAddress, setPickedAddress] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [upiId, setUpiId] = useState('');
+
   const handleLocationSelected = useCallback(location => {
     setPickedLocation(location);
-
     setModalVisible(false);
   }, []);
 
-  /* -----------------------------
-     Load profile once (SAFE)
-  ------------------------------ */
+  // Load profile (only once)
   useEffect(() => {
     if (!accessToken || hydrated) return;
 
@@ -76,78 +97,53 @@ const Eopen = () => {
       try {
         const data = await fetchAndCacheProfile(accessToken);
         if (!mounted || !data) return;
-        console.log(data.social_accounts);
-        console.log(data);
-        setCoverImage(prev => prev ?? data.cover_image ?? null);
-        setProfileImage(prev => prev ?? data.profile_image ?? null);
-        setName(prev => (prev !== '' ? prev : data.name ?? ''));
-        setNameLocation(prev => (prev !== '' ? prev : data.namelocation ?? ''));
-        setGender(prev => (prev !== '' ? prev : data.gender ?? ''));
-        setBirthYear(prev =>
-          prev !== '' ? prev : String(data.birth_year ?? ''),
-        );
-        setBio(prev => (prev !== '' ? prev : data.bio ?? ''));
-        setStatus(prev => (prev !== '' ? prev : data.status_type ?? ''));
-        setFillOne(prev => (prev !== '' ? prev : data.fillone ?? ''));
-        setFillTwo(prev => (prev !== '' ? prev : data.filltwo ?? ''));
-        setSelectedLanguages(prev =>
-          prev.length > 0
-            ? prev
-            : Array.isArray(data.selected_languages)
-            ? data.selected_languages
-            : [],
-        );
 
-        setPhoneNumber(prev => (prev !== '' ? prev : data.phone_number ?? ''));
-        setEmail(prev => (prev !== '' ? prev : data.email ?? ''));
-        setEmergencyNumber(prev =>
-          prev !== '' ? prev : data.emergency_number ?? '',
+        setOriginalProfile(data);
+
+        setCoverImage(data.cover_image ?? null);
+        setProfileImage(data.profile_image ?? null);
+        setName(data.name ?? '');
+        setNameLocation(data.namelocation ?? '');
+        setGender(data.gender ?? '');
+        setBirthYear(data.birth_year ? String(data.birth_year) : '');
+        setBio(data.bio ?? '');
+        setStatus(data.status_type ?? '');
+        setFillOne(data.fillone ?? '');
+        setFillTwo(data.filltwo ?? '');
+        setSelectedLanguages(
+          Array.isArray(data.selected_languages) ? data.selected_languages : [],
         );
-        setDocument(
-          Array.isArray(data.documents) && data.documents.length > 0
-            ? data.documents[0]
-            : null,
-        );
-        // Social accounts (SAFE hydrate once)
-        if (!socialHydrated && data.social_accounts) {
-          const cleanedSocials = Object.fromEntries(
+        setPhoneNumber(data.phone_number ?? '');
+        setEmail(data.email ?? '');
+        setEmergencyNumber(data.emergency_number ?? '');
+        setDocuments(Array.isArray(data.documents) ? data.documents : []);
+        setUpiId(data.upi_id ?? '');
+
+        // Social
+        if (data.social_accounts) {
+          const cleaned = Object.fromEntries(
             Object.entries(data.social_accounts).filter(
-              ([_, v]) => typeof v === 'string' && v.trim() !== '',
+              ([, v]) => typeof v === 'string' && v.trim(),
             ),
           );
-
-          setSocialAccounts(cleanedSocials);
-          setSelectedPlatforms(Object.keys(cleanedSocials));
-          setSocialHydrated(true);
+          setSocialAccounts(cleaned);
+          setSelectedPlatforms(Object.keys(cleaned));
         }
-        setCustomLinks(prev =>
-          Array.isArray(prev) && prev.length > 0
-            ? prev
-            : Array.isArray(data.custom_links)
-            ? data.custom_links
-            : [],
+
+        setCustomLinks(
+          Array.isArray(data.custom_links) ? data.custom_links : [],
         );
 
-        setPickedLocation(prev => {
-          if (prev) return prev;
+        // Location
+        if (data.lat && data.lng) {
+          setPickedLocation({ latitude: data.lat, longitude: data.lng });
+        }
+        setPickedAddress(data.address ?? '');
 
-          if (typeof data.lat === 'number' && typeof data.lng === 'number') {
-            return {
-              latitude: data.lat,
-              longitude: data.lng,
-            };
-          }
-
-          return null;
-        });
-
-        setPickedAddress(prev => {
-          if (prev !== '') return prev;
-          return data.address ?? '';
-        });
-        setUpiId(prev => (prev !== '' ? prev : data.upi_id ?? ''));
         setHydrated(true);
-      } catch {}
+      } catch (err) {
+        console.error('Profile load error:', err);
+      }
     };
 
     loadProfile();
@@ -156,6 +152,165 @@ const Eopen = () => {
       mounted = false;
     };
   }, [accessToken, hydrated]);
+
+  const handleSave = useCallback(async () => {
+    if (!accessToken || !originalProfile) return;
+
+    setLoading(true);
+
+    try {
+      // 1️⃣ Start with server values
+      let profileImageUrl = originalProfile.profile_image || null;
+      let coverImageUrl = originalProfile.cover_image || null;
+
+      // 2️⃣ Upload PROFILE image only if local
+      if (isLocalFile(profileImage)) {
+        const uploaded = await uploadFile(
+          profileImage,
+          UploadTypes.PROFILE_IMAGE,
+          accessToken,
+        );
+        if (uploaded) {
+          profileImageUrl = uploaded;
+        }
+      }
+
+      // 3️⃣ Upload COVER image only if local
+      if (isLocalFile(coverImage)) {
+        const uploaded = await uploadFile(
+          coverImage,
+          UploadTypes.COVER_IMAGE,
+          accessToken,
+        );
+        if (uploaded) {
+          coverImageUrl = uploaded;
+        }
+      }
+
+      // 4️⃣ Documents (WITH STEP-BY-STEP LOGS)
+      let uploadedDocs = [];
+
+      console.log('==============================');
+      console.log('📄 DOCUMENT CHECK START');
+      console.log('📦 documents raw value:', documents);
+      console.log('📦 isArray:', Array.isArray(documents));
+      console.log(
+        '📦 length:',
+        Array.isArray(documents) ? documents.length : 'N/A',
+      );
+
+      if (Array.isArray(documents) && documents.length > 0) {
+        console.log('✅ Documents exist');
+
+        const localCheck = documents.map((doc, index) => {
+          const uri = doc?.uri || doc?.url;
+          const isLocal = isLocalFile(doc);
+
+          console.log(`📄 Doc[${index}]`);
+          console.log('   uri:', uri);
+          console.log('   isLocal:', isLocal);
+
+          return isLocal;
+        });
+
+        const hasLocal = localCheck.some(Boolean);
+        console.log('📌 Has at least one LOCAL document:', hasLocal);
+
+        if (hasLocal) {
+          console.log('🚀 Triggering DOCUMENT UPLOAD');
+          uploadedDocs = await handleDocumentUploads(
+            documents,
+            UploadTypes.DOCUMENT,
+            accessToken,
+          );
+        } else {
+          console.log('📤 No local docs → using existing server docs');
+          uploadedDocs = normalizeDocuments(documents);
+        }
+      } else {
+        console.log('❌ No documents found');
+      }
+
+      console.log('📨 Final uploadedDocs payload:', uploadedDocs);
+      console.log('==============================');
+
+      // 5️⃣ Build diff payload
+      const updates = buildProfileUpdatePayload({
+        originalProfile,
+        profileImageUrl,
+        coverImageUrl,
+        uploadedDocs,
+        name,
+        bio,
+        status,
+        fillOne,
+        fillTwo,
+        phoneNumber,
+        email,
+        emergencyNumber,
+        upiId,
+        gender,
+        birthYear,
+        socialAccounts,
+        namelocation,
+        pickedAddress,
+        pickedLocation,
+        customLinks,
+        selectedLanguages,
+      });
+
+      // 6️⃣ No changes → stop
+      if (Object.keys(updates).length === 0) {
+        setAlertTitle('No Changes');
+        setAlertMessage('Your profile is already up to date.');
+        setAlertVisible(true);
+        return;
+      }
+
+      // 7️⃣ Update profile
+      const res = await api.patch('/api/user/updateProfile', updates, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      await saveProfileToCache(res.data);
+      await saveLastUpdatedToCache(res.data.updated_at);
+
+      setAlertTitle('Success');
+      setAlertMessage('Profile updated successfully ✓');
+      setAlertVisible(true);
+    } catch (err) {
+      setAlertTitle('Error');
+      setAlertMessage(
+        err?.response?.data?.message || 'Failed to update profile',
+      );
+      setAlertVisible(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    accessToken,
+    originalProfile,
+    profileImage,
+    coverImage,
+    documents,
+    name,
+    bio,
+    status,
+    fillOne,
+    fillTwo,
+    phoneNumber,
+    email,
+    emergencyNumber,
+    upiId,
+    gender,
+    birthYear,
+    socialAccounts,
+    namelocation,
+    pickedAddress,
+    pickedLocation,
+    customLinks,
+    selectedLanguages,
+  ]);
 
   return (
     <SafeAreaView style={styles.main}>
@@ -175,7 +330,6 @@ const Eopen = () => {
             setCoverImage={setCoverImage}
             navigation={navigation}
           />
-
           <ProfileImagePicker
             profileImage={profileImage}
             setProfileImage={setProfileImage}
@@ -193,9 +347,7 @@ const Eopen = () => {
               Namelocation={namelocation}
               setNameLocation={setNameLocation}
             />
-
             <BioInput bio={bio} setBio={setBio} />
-
             <JobStudyCont
               status={status}
               fillOne={fillOne}
@@ -204,7 +356,6 @@ const Eopen = () => {
               setFillOne={setFillOne}
               setFillTwo={setFillTwo}
             />
-
             <LanguagesSpokenSelector
               selectedLanguages={selectedLanguages}
               setSelectedLanguages={setSelectedLanguages}
@@ -218,8 +369,8 @@ const Eopen = () => {
               setEmergencyNumber={setEmergencyNumber}
             />
             <ProfileDocumentUpload
-              onFilesPicked={setDocument}
-              initialFile={document}
+              onFilesPicked={setDocuments}
+              initialFile={documents} // ← pass whole array
               augtitle="Upload Resume / Certificate"
             />
 
@@ -241,19 +392,38 @@ const Eopen = () => {
               selectedPlatforms={selectedPlatforms}
               setSelectedPlatforms={setSelectedPlatforms}
             />
-
             <CustomLinksInput
               customLinks={customLinks}
               setCustomLinks={setCustomLinks}
             />
           </View>
         </ScrollView>
+
+        <View style={styles.saveWrapper}>
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.saveBtnText}>Save</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <ConfirmModal
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          onConfirm={() => setAlertVisible(false)}
+          onCancel={() => setAlertVisible(false)}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
-
-export default Eopen;
 
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#fff' },
@@ -261,6 +431,28 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fafafa' },
   profileInputSection: {
     paddingHorizontal: 20,
-    paddingBottom: 120,
+    paddingBottom: 140, // ← more space for save button
+  },
+  saveWrapper: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  saveBtn: {
+    backgroundColor: '#000',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    minWidth: 160,
+    alignItems: 'center',
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
+
+export default Eopen;
