@@ -9,26 +9,38 @@ import {
 
 const MAX_CUSTOM_LINKS = 5;
 
-const CustomLinksInput = ({ customLinks = [], setCustomLinks }) => {
-  const addLink = () => {
-    if (customLinks.length >= MAX_CUSTOM_LINKS) return;
+const CustomLinksInput = ({ customLinks, setCustomLinks }) => {
+  // ✅ HARD SAFETY: always work with array
+  const safeLinks = Array.isArray(customLinks) ? customLinks : [];
 
-    setCustomLinks(prev => [...prev, { name: '', url: '' }]);
+  const addLink = () => {
+    if (safeLinks.length >= MAX_CUSTOM_LINKS) return;
+
+    setCustomLinks(prev => {
+      const arr = Array.isArray(prev) ? prev : [];
+      return [...arr, { name: '', url: '' }];
+    });
   };
 
   const updateLink = (index, field, value) => {
     setCustomLinks(prev => {
-      const updated = [...prev];
+      const arr = Array.isArray(prev) ? prev : [];
+      const updated = [...arr];
+
       updated[index] = {
-        ...updated[index],
+        ...(updated[index] || { name: '', url: '' }),
         [field]: value,
       };
+
       return updated;
     });
   };
 
   const removeLink = index => {
-    setCustomLinks(prev => prev.filter((_, i) => i !== index));
+    setCustomLinks(prev => {
+      const arr = Array.isArray(prev) ? prev : [];
+      return arr.filter((_, i) => i !== index);
+    });
   };
 
   return (
@@ -38,7 +50,7 @@ const CustomLinksInput = ({ customLinks = [], setCustomLinks }) => {
         Add useful links like portfolio, booking page, brochure, etc.
       </Text>
 
-      {customLinks.map((link, index) => (
+      {safeLinks.map((link, index) => (
         <View key={index} style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Link {index + 1}</Text>
@@ -51,7 +63,7 @@ const CustomLinksInput = ({ customLinks = [], setCustomLinks }) => {
           <TextInput
             style={styles.input}
             placeholder="Link name (e.g. Portfolio)"
-            value={link.name}
+            value={link?.name || ''}
             onChangeText={text => updateLink(index, 'name', text.slice(0, 30))}
             maxLength={30}
           />
@@ -59,7 +71,7 @@ const CustomLinksInput = ({ customLinks = [], setCustomLinks }) => {
           <TextInput
             style={styles.input}
             placeholder="https://example.com"
-            value={link.url}
+            value={link?.url || ''}
             onChangeText={text => updateLink(index, 'url', text)}
             autoCapitalize="none"
             keyboardType="url"
@@ -67,13 +79,13 @@ const CustomLinksInput = ({ customLinks = [], setCustomLinks }) => {
         </View>
       ))}
 
-      {customLinks.length < MAX_CUSTOM_LINKS && (
+      {safeLinks.length < MAX_CUSTOM_LINKS && (
         <TouchableOpacity style={styles.addButton} onPress={addLink}>
           <Text style={styles.addButtonText}>+ Add another link</Text>
         </TouchableOpacity>
       )}
 
-      {customLinks.length >= MAX_CUSTOM_LINKS && (
+      {safeLinks.length >= MAX_CUSTOM_LINKS && (
         <Text style={styles.limitText}>
           You can add up to {MAX_CUSTOM_LINKS} links
         </Text>
@@ -83,6 +95,7 @@ const CustomLinksInput = ({ customLinks = [], setCustomLinks }) => {
 };
 
 export default CustomLinksInput;
+
 const styles = StyleSheet.create({
   wrapper: {
     marginTop: 12,

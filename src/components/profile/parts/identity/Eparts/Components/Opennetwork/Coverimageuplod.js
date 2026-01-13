@@ -30,7 +30,12 @@ const resolveImageSource = img => {
   }
 
   // iOS local absolute
-  if (uri.startsWith('/var/') || uri.startsWith('/Users/')) {
+  // iOS local absolute (FIXED)
+  if (
+    uri.startsWith('/var/') ||
+    uri.startsWith('/private/var/') ||
+    uri.startsWith('/Users/')
+  ) {
     return { uri: `file://${uri}` };
   }
 
@@ -70,7 +75,7 @@ const CoverImagePicker = ({ coverImage, setCoverImage }) => {
       });
 
       if (!image?.path) return;
-
+      console.log('image pick ', image);
       setCoverImage(image.path);
       setShowDelete(false);
     } catch {

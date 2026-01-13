@@ -30,7 +30,12 @@ const resolveImageSource = img => {
   }
 
   // iOS local absolute (device + simulator)
-  if (uri.startsWith('/var/') || uri.startsWith('/Users/')) {
+  // iOS local absolute (FIXED)
+  if (
+    uri.startsWith('/var/') ||
+    uri.startsWith('/private/var/') ||
+    uri.startsWith('/Users/')
+  ) {
     return { uri: `file://${uri}` };
   }
 

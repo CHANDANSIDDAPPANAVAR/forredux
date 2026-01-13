@@ -30,6 +30,7 @@ const resolveImageSource = img => {
     uri.startsWith('/storage/') ||
     uri.startsWith('/data/') ||
     uri.startsWith('/var/') ||
+    uri.startsWith('/private/var/') ||
     uri.startsWith('/Users/')
   ) {
     return { uri: `file://${uri}` };

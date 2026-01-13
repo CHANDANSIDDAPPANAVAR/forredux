@@ -331,7 +331,6 @@ const Eopen = () => {
           <CoverImagePicker
             coverImage={coverImage}
             setCoverImage={setCoverImage}
-            navigation={navigation}
           />
           <ProfileImagePicker
             profileImage={profileImage}

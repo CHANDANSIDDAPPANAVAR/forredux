@@ -28,73 +28,136 @@ const IMAGE_SIZE =
   (width - PARENT_MARGIN * 2 - GAP * (NUM_COLUMNS * 2)) / NUM_COLUMNS;
 
 /* ----------------------------------
-   HELPERS
+   HELPERS (CORE)
 ----------------------------------- */
-const isValidImage = img => !!img && img !== 'null' && img !== '';
-const getImageUri = item => {
-  const raw = item?.uri || item?.url;
+const isValidImage = value =>
+  typeof value === 'string' && value.trim().length > 0 && value !== 'null';
+
+const isLocalImage = uri =>
+  typeof uri === 'string' &&
+  (uri.startsWith('file://') || uri.startsWith('content://'));
+
+const isRemoteImage = uri =>
+  typeof uri === 'string' &&
+  (uri.startsWith('http://') || uri.startsWith('https://'));
+
+const normalizeUri = raw => {
   if (!raw) return null;
 
-  // Already valid local URIs
   if (raw.startsWith('file://') || raw.startsWith('content://')) {
     return raw;
   }
 
-  // iOS absolute paths (THIS FIXES YOUR ISSUE)
   if (
     raw.startsWith('/var/') ||
     raw.startsWith('/private/var/') ||
-    raw.startsWith('/Users/')
+    raw.startsWith('/Users/') ||
+    raw.startsWith('/storage/') ||
+    raw.startsWith('/data/')
   ) {
     return `file://${raw}`;
   }
 
-  // Android absolute paths
-  if (raw.startsWith('/storage/') || raw.startsWith('/data/')) {
-    return `file://${raw}`;
-  }
-
-  // Remote absolute
   if (raw.startsWith('http://') || raw.startsWith('https://')) {
     return raw;
   }
 
-  // Backend relative path
   return resolveMediaUrl(raw);
+};
+
+const getItemUri = item => {
+  const raw = item?.uri || item?.url;
+  if (!raw) return null;
+
+  // ONLY resolve for UI
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  if (raw.startsWith('file://') || raw.startsWith('content://')) return raw;
+
+  return resolveMediaUrl(raw);
+};
+
+/* ----------------------------------
+   UPLOAD BUILDER (IMPORTANT)
+----------------------------------- */
+export const buildGalleryFormData = galleryImages => {
+  const formData = new FormData();
+
+  /* Upload ONLY new (local) images */
+  const newImages = galleryImages.filter(
+    item => item.uri.startsWith('file://') || item.uri.startsWith('content://'),
+  );
+
+  newImages.forEach((item, index) => {
+    formData.append('images', {
+      uri: item.uri,
+      type: 'image/jpeg',
+      name: `gallery_${Date.now()}_${index}.jpg`,
+    });
+  });
+
+  /* Send existing images separately */
+  const existingImages = galleryImages
+    .filter(item => item.uri.startsWith('/uploads'))
+    .map(item => item.uri);
+
+  formData.append('existingImages', JSON.stringify(existingImages));
+
+  return formData;
 };
 
 /* ----------------------------------
    COMPONENT
 ----------------------------------- */
-const GalleryInput = ({ galleryImages, setGalleryImages }) => {
+const GalleryInput = ({ galleryImages = [], setGalleryImages }) => {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
-
+  console.log(galleryImages);
+  /* -------- VALID IMAGES -------- */
   const validImages = useMemo(
     () => galleryImages.filter(item => isValidImage(item?.uri || item?.url)),
     [galleryImages],
   );
+  const getRawUri = item => item?.uri || item?.url || null;
 
+  /* -------- PICK IMAGES -------- */
   const pickImages = useCallback(async () => {
+    if (validImages.length >= MAX_IMAGES) {
+      Alert.alert('Limit reached', `You can add up to ${MAX_IMAGES} images`);
+      return;
+    }
+
     try {
       const images = await ImagePicker.openPicker({
         multiple: true,
-        maxFiles: MAX_IMAGES - validImages.length,
         mediaType: 'photo',
+        maxFiles: MAX_IMAGES - validImages.length,
       });
 
+      if (!Array.isArray(images) || images.length === 0) return;
+
       const selected = images.map(img => ({
-        uri: img.path,
+        uri: img.path.startsWith('file://') ? img.path : `file://${img.path}`,
       }));
 
-      setGalleryImages(prev => [...prev, ...selected].slice(0, MAX_IMAGES));
+      setGalleryImages(prev => {
+        const merged = [...prev, ...selected];
+
+        const uniqueMap = new Map();
+        merged.forEach(item => {
+          const rawUri = getRawUri(item);
+          if (rawUri) uniqueMap.set(rawUri, { uri: rawUri });
+        });
+
+        return Array.from(uniqueMap.values()).slice(0, MAX_IMAGES);
+      });
     } catch {
-      // cancelled → silent
+      // user cancelled
     }
   }, [validImages.length, setGalleryImages]);
 
+  /* -------- REMOVE IMAGE -------- */
   const removeImage = useCallback(
-    index => {
+    uriToRemove => {
       Keyboard.dismiss();
 
       Alert.alert(
@@ -106,7 +169,9 @@ const GalleryInput = ({ galleryImages, setGalleryImages }) => {
             text: 'Remove',
             style: 'destructive',
             onPress: () => {
-              setGalleryImages(prev => prev.filter((_, i) => i !== index));
+              setGalleryImages(prev =>
+                prev.filter(item => getItemUri(item) !== uriToRemove),
+              );
             },
           },
         ],
@@ -115,6 +180,7 @@ const GalleryInput = ({ galleryImages, setGalleryImages }) => {
     [setGalleryImages],
   );
 
+  /* -------- VIEWER -------- */
   const openViewer = useCallback(index => {
     Keyboard.dismiss();
     setViewerIndex(index);
@@ -122,29 +188,34 @@ const GalleryInput = ({ galleryImages, setGalleryImages }) => {
   }, []);
 
   const viewerImageUri =
-    validImages[viewerIndex] && getImageUri(validImages[viewerIndex]);
+    validImages[viewerIndex] && getItemUri(validImages[viewerIndex]);
 
+  /* ---------------------------------- */
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Gallery / Portfolio Images</Text>
 
       <View style={styles.gridContainer}>
         {validImages.map((item, index) => {
-          const uri = getImageUri(item);
+          const uri = getItemUri(item);
           if (!uri) return null;
 
           return (
-            <View key={`${uri}-${index}`} style={styles.imageContainer}>
+            <View key={uri} style={styles.imageContainer}>
               <TouchableOpacity
                 onPress={() => openViewer(index)}
                 activeOpacity={0.9}
               >
-                <Image source={{ uri }} style={styles.image} />
+                <Image
+                  source={{ uri }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.removeBtn}
-                onPress={() => removeImage(index)}
+                onPress={() => removeImage(uri)}
                 activeOpacity={0.8}
               >
                 <Text style={styles.removeText}>×</Text>

@@ -41,13 +41,12 @@ const normalizeFile = doc => {
   if (!doc || (!doc.uri && !doc.url)) return null;
 
   return {
-    name: doc.name || doc.displayName || 'Document',
+    name: doc.name || doc.displayName || '',
     uri: doc.uri || doc.url,
     url: doc.url || doc.uri,
     type: doc.type || 'application/pdf',
     displayName:
-      doc.displayName ||
-      cleanDocName(doc.name || doc.displayName || 'Document'),
+      doc.displayName || cleanDocName(doc.name || doc.displayName || ''),
   };
 };
 
