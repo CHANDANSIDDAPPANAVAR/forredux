@@ -14,17 +14,19 @@ export const UploadTypes = {
 /* ----------------------------------
    HELPERS
 ----------------------------------- */
-export const isLocalFile = uri => {
+export const isLocalFile = fileOrUri => {
+  const uri = typeof fileOrUri === 'string' ? fileOrUri : fileOrUri?.uri;
+
   if (!uri || typeof uri !== 'string') return false;
-  console.log('is locla file', uri);
+
   return (
-    uri.startsWith('file://') || // Android / iOS (wrapped)
-    uri.startsWith('content://') || // Android
-    uri.startsWith('/var/') || // iOS
-    uri.startsWith('/private/var/') || // iOS
-    uri.startsWith('/Users/') || // iOS simulator
-    uri.startsWith('/storage/') || // Android
-    uri.startsWith('/data/') // Android
+    uri.startsWith('file://') ||
+    uri.startsWith('content://') ||
+    uri.startsWith('/var/') ||
+    uri.startsWith('/private/var/') ||
+    uri.startsWith('/Users/') ||
+    uri.startsWith('/storage/') ||
+    uri.startsWith('/data/')
   );
 };
 
@@ -52,41 +54,63 @@ const getMimeType = filename => {
 /* ----------------------------------
    FILE UPLOAD
 ----------------------------------- */
-export const uploadFile = async (file, type, auth) => {
-  if (!file?.uri) return null;
-  console.log('in uplodes', file, type);
+export const uploadFile = async (file, type, accessToken) => {
+  console.log('==============================');
+  console.log('🚀 UPLOAD START');
+  console.log('📦 Upload type:', type);
+  console.log('📁 Raw file input:', file);
 
-  const token = auth?.accessToken || auth?.tokens?.accessToken;
-  if (!token) return null;
+  // ✅ Normalize string → object
+  const fileObj = typeof file === 'string' ? { uri: file } : file;
 
-  const name =
-    file.name ||
-    file.fileName ||
-    file.uri.split('/').pop()?.split('?')[0] ||
-    `upload-${Date.now()}`;
+  if (!fileObj?.uri) {
+    console.log('❌ STOP: file.uri is missing');
+    console.log('==============================');
+    return null;
+  }
+
+  const normalizedUri = normalizeUri(fileObj.uri);
+  console.log('🔄 Normalized URI:', normalizedUri);
+
+  const fileName =
+    fileObj.name ||
+    fileObj.fileName ||
+    fileObj.displayName ||
+    normalizedUri.split('/').pop() ||
+    `upload-${Date.now()}.jpg`;
+
+  const mimeType = fileObj.type || getMimeType(fileName);
+
+  console.log('📝 File name:', fileName);
+  console.log('🧾 MIME type:', mimeType);
 
   const formData = new FormData();
   formData.append('file', {
-    uri: normalizeUri(file.uri),
-    name,
-    type: file.type || getMimeType(name),
+    uri: normalizedUri,
+    name: fileName,
+    type: mimeType,
   });
   formData.append('type', type);
 
+  console.log('📡 Sending upload request...');
+
   const res = await api.post(`/api/user/upload?type=${type}`, formData, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'multipart/form-data',
     },
   });
 
-  return res?.data?.url || null;
+  console.log('📨 Upload response:', res.data);
+  console.log('==============================');
+
+  return res?.data?.url || res?.data?.path || res?.data?.fileUrl || null;
 };
 
 /* ----------------------------------
    DOCUMENT UPLOADS
 ----------------------------------- */
-export const handleDocumentUploads = async (docs = [], type, auth) => {
+export const handleDocumentUploads = async (docs = [], type, accessToken) => {
   if (!Array.isArray(docs) || docs.length === 0) return [];
 
   const uploaded = [];
@@ -96,7 +120,7 @@ export const handleDocumentUploads = async (docs = [], type, auth) => {
       doc.displayName || doc.name || doc.uri?.split('/').pop() || 'Untitled';
 
     if (isLocalFile(doc?.uri)) {
-      const url = await uploadFile(doc, type, auth);
+      const url = await uploadFile(doc, type, accessToken);
       if (url) uploaded.push({ name: String(name), url });
     } else if (doc?.url || doc?.uri) {
       uploaded.push({
@@ -112,7 +136,7 @@ export const handleDocumentUploads = async (docs = [], type, auth) => {
 /* ----------------------------------
    GALLERY UPLOADS
 ----------------------------------- */
-export const handleGalleryUploads = async (images = [], type, auth) => {
+export const handleGalleryUploads = async (images = [], type, accessToken) => {
   if (!Array.isArray(images) || images.length === 0) return [];
 
   const uploaded = [];
@@ -122,7 +146,7 @@ export const handleGalleryUploads = async (images = [], type, auth) => {
       img.name || img.uri?.split('/').pop() || `gallery-${Date.now()}`;
 
     if (isLocalFile(img?.uri)) {
-      const url = await uploadFile(img, type, auth);
+      const url = await uploadFile(img, type, accessToken);
       if (url) uploaded.push({ name: String(name), url });
     } else if (img?.url || img?.uri) {
       uploaded.push({

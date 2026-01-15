@@ -202,69 +202,35 @@ const Eproff = () => {
     setIsSuccess(false);
 
     try {
-      let profileImageUrl = originalProfile.profile_image || null;
-      let coverImageUrl = originalProfile.cover_image || null;
+      let profileImageUrl;
 
-      console.log('🧪 INITIAL profileImage:', profileImage);
-      console.log('🧪 INITIAL coverImage:', coverImage);
-
-      // ---------- PROFILE IMAGE ----------
-      if (profileImage) {
-        console.log('➡️ profileImage.uri:', profileImage);
-        console.log(
-          '➡️ isLocalFile(profileImage.uri):',
-          isLocalFile(profileImage),
+      if (profileImage === null) {
+        // User removed image
+        profileImageUrl = null;
+      } else if (isLocalFile(profileImage)) {
+        // New image selected
+        profileImageUrl = await uploadFile(
+          profileImage,
+          UploadTypes.PROFILE_IMAGE,
+          accessToken,
         );
-
-        if (isLocalFile(profileImage)) {
-          console.log('⬆️ Uploading PROFILE image...');
-          const uploaded = await uploadFile(
-            profileImage,
-            UploadTypes.PROFILE_IMAGE,
-            { accessToken },
-          );
-
-          console.log('✅ Uploaded PROFILE image URL:', uploaded);
-          profileImageUrl = uploaded || profileImageUrl;
-        } else {
-          console.log('⏭ PROFILE image is NOT local, skipping upload');
-        }
       } else {
-        console.log('❌ profileImage is null');
+        // Existing remote image
+        profileImageUrl = originalProfile.profile_image;
       }
 
-      // ---------- COVER IMAGE ----------
-      if (coverImage) {
-        console.log('➡️ coverImage.uri:', coverImage);
-        console.log('➡️ isLocalFile(coverImage.uri):', isLocalFile(coverImage));
+      let coverImageUrl;
 
-        if (isLocalFile(coverImage)) {
-          console.log('⬆️ Uploading COVER image...');
-          const uploaded = await uploadFile(
-            coverImage,
-            UploadTypes.COVER_IMAGE,
-            { accessToken },
-          );
-
-          console.log('✅ Uploaded COVER image URL:', uploaded);
-          coverImageUrl = uploaded || coverImageUrl;
-        } else {
-          console.log('⏭ COVER image is NOT local, skipping upload');
-        }
-      } else {
-        console.log('❌ coverImage is null');
-      }
-
-      console.log('📦 FINAL profileImageUrl:', profileImageUrl);
-      console.log('📦 FINAL coverImageUrl:', coverImageUrl);
-
-      let uploadedDocs = normalizeDocuments(documents);
-      if (documents.some(d => isLocalFile(d.uri))) {
-        uploadedDocs = await handleDocumentUploads(
-          documents,
-          UploadTypes.DOCUMENT,
-          { accessToken },
+      if (coverImage === null) {
+        coverImageUrl = null;
+      } else if (isLocalFile(coverImage)) {
+        coverImageUrl = await uploadFile(
+          coverImage,
+          UploadTypes.COVER_IMAGE,
+          accessToken,
         );
+      } else {
+        coverImageUrl = originalProfile.cover_image;
       }
 
       let uploadedGallery = galleryImages;
@@ -272,7 +238,16 @@ const Eproff = () => {
         uploadedGallery = await handleGalleryUploads(
           galleryImages,
           UploadTypes.GALLERY_IMAGE,
-          { accessToken },
+          accessToken,
+        );
+      }
+
+      let uploadedDocs = documents;
+      if (documents.some(doc => isLocalFile(doc))) {
+        uploadedDocs = await handleDocumentUploads(
+          documents,
+          UploadTypes.DOCUMENT,
+          accessToken,
         );
       }
 

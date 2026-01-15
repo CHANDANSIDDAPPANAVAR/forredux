@@ -111,7 +111,7 @@ export const buildGalleryFormData = galleryImages => {
 const GalleryInput = ({ galleryImages = [], setGalleryImages }) => {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
-  console.log(galleryImages);
+
   /* -------- VALID IMAGES -------- */
   const validImages = useMemo(
     () => galleryImages.filter(item => isValidImage(item?.uri || item?.url)),

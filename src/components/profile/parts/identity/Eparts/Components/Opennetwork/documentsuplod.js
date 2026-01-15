@@ -65,7 +65,7 @@ export default function ProfileFileScreen({
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [pdfUri, setPdfUri] = useState('');
-  console.log(initialFile);
+
   /* -------------------consol------
      Sync backend value
   -------------------------- */
