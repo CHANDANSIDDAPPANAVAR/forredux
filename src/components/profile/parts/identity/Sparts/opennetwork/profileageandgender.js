@@ -14,7 +14,7 @@ import { resolveMediaUrl } from '../../../../../../services/mediaUrl';
 /* ----------------------------------
    Constants
 ----------------------------------- */
-const FALLBACK_IMAGE = require('../../../../../assets/util/no-img.png');
+const FALLBACK_IMAGE = require('../../../../../assets/choseaccount/assets/noprofile.png');
 
 /* ----------------------------------
    Utils

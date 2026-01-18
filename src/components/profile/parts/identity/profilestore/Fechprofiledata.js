@@ -25,11 +25,7 @@ export const fetchAndCacheProfile = async accessToken => {
   try {
     console.log('🔍 Sending HEAD request to check updated_at');
 
-    const headRes = await api.head('/api/user/profiledata', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const headRes = await api.head('/api/user/profiledata');
 
     const serverUpdatedAt = headRes.headers['x-profile-updated-at'];
     console.log('🕓 Server updated_at:', serverUpdatedAt);
@@ -50,11 +46,7 @@ export const fetchAndCacheProfile = async accessToken => {
     // 🌐 Fetch from server
     console.log('🌐 Cache stale → fetching full profile from server');
 
-    const fullRes = await api.get('/api/user/profiledata', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const fullRes = await api.get('/api/user/profiledata');
 
     const data = fullRes.data;
     const updatedAt = data.updated_at || new Date().toISOString();

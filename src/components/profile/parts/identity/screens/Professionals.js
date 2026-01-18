@@ -44,7 +44,7 @@ const Professionals = ({ isPro }) => {
     latitude: profile?.latitude,
     longitude: profile?.longitude,
   };
-
+  console.log(profile);
   return (
     <SafeAreaView>
       <Hederprofile

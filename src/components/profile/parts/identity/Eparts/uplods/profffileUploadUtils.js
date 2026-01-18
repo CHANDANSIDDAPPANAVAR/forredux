@@ -15,7 +15,10 @@ export const UploadTypes = {
    HELPERS
 ----------------------------------- */
 export const isLocalFile = fileOrUri => {
-  const uri = typeof fileOrUri === 'string' ? fileOrUri : fileOrUri?.uri;
+  if (!fileOrUri) return false;
+
+  const uri =
+    typeof fileOrUri === 'string' ? fileOrUri : fileOrUri.uri || fileOrUri.url;
 
   if (!uri || typeof uri !== 'string') return false;
 
@@ -55,34 +58,19 @@ const getMimeType = filename => {
    FILE UPLOAD
 ----------------------------------- */
 export const uploadFile = async (file, type, accessToken) => {
-  console.log('==============================');
-  console.log('🚀 UPLOAD START');
-  console.log('📦 Upload type:', type);
-  console.log('📁 Raw file input:', file);
-
-  // ✅ Normalize string → object
   const fileObj = typeof file === 'string' ? { uri: file } : file;
-
-  if (!fileObj?.uri) {
-    console.log('❌ STOP: file.uri is missing');
-    console.log('==============================');
-    return null;
-  }
+  if (!fileObj?.uri) return null;
 
   const normalizedUri = normalizeUri(fileObj.uri);
-  console.log('🔄 Normalized URI:', normalizedUri);
 
   const fileName =
     fileObj.name ||
     fileObj.fileName ||
     fileObj.displayName ||
     normalizedUri.split('/').pop() ||
-    `upload-${Date.now()}.jpg`;
+    `upload-${Date.now()}`;
 
   const mimeType = fileObj.type || getMimeType(fileName);
-
-  console.log('📝 File name:', fileName);
-  console.log('🧾 MIME type:', mimeType);
 
   const formData = new FormData();
   formData.append('file', {
@@ -90,9 +78,6 @@ export const uploadFile = async (file, type, accessToken) => {
     name: fileName,
     type: mimeType,
   });
-  formData.append('type', type);
-
-  console.log('📡 Sending upload request...');
 
   const res = await api.post(`/api/user/upload?type=${type}`, formData, {
     headers: {
@@ -101,10 +86,7 @@ export const uploadFile = async (file, type, accessToken) => {
     },
   });
 
-  console.log('📨 Upload response:', res.data);
-  console.log('==============================');
-
-  return res?.data?.url || res?.data?.path || res?.data?.fileUrl || null;
+  return res?.data?.url || res?.data?.path || null;
 };
 
 /* ----------------------------------
@@ -116,16 +98,24 @@ export const handleDocumentUploads = async (docs = [], type, accessToken) => {
   const uploaded = [];
 
   for (const doc of docs) {
-    const name =
-      doc.displayName || doc.name || doc.uri?.split('/').pop() || 'Untitled';
+    // 🔒 hard safety guard
+    if (!doc || !doc.uri) continue;
 
-    if (isLocalFile(doc?.uri)) {
+    const name =
+      doc.displayName || doc.name || doc.uri.split('/').pop() || 'Untitled';
+
+    if (isLocalFile(doc)) {
       const url = await uploadFile(doc, type, accessToken);
-      if (url) uploaded.push({ name: String(name), url });
-    } else if (doc?.url || doc?.uri) {
+      if (url) {
+        uploaded.push({
+          name: String(name),
+          url: String(url),
+        });
+      }
+    } else if (doc.url) {
       uploaded.push({
         name: String(name),
-        url: String(doc.url || doc.uri),
+        url: String(doc.url),
       });
     }
   }

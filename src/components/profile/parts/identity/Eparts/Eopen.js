@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -49,6 +50,8 @@ import ConfirmModal from '../../../../util/alerts/ConfirmModal';
 const Eopen = () => {
   const navigation = useNavigation();
   const { accessToken } = useSelector(state => state.auth);
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const savingRef = useRef(false);
 
   const [loading, setLoading] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -155,37 +158,53 @@ const Eopen = () => {
   }, [accessToken, hydrated]);
 
   const handleSave = useCallback(async () => {
-    if (!accessToken || !originalProfile) return;
+    // 🔒 SAVE LOCK (same as Eproff)
+    if (savingRef.current) return;
+    savingRef.current = true;
+
+    if (!accessToken || !originalProfile) {
+      savingRef.current = false;
+      return;
+    }
 
     setLoading(true);
 
-    try {
-      // 1️⃣ Start with server values
-      let profileImageUrl = originalProfile.profile_image || null;
-      let coverImageUrl = originalProfile.cover_image || null;
+    // ⏳ DELAY (same as Eproff)
+    await delay(2000);
 
-      // 2️⃣ Upload PROFILE image only if local
-      if (isLocalFile(profileImage)) {
+    try {
+      let profileImageUrl;
+      let coverImageUrl;
+
+      /* ---------- PROFILE IMAGE ---------- */
+      if (profileImage === null) {
+        // ✅ USER DELETED IMAGE
+        profileImageUrl = null;
+      } else if (isLocalFile(profileImage)) {
+        // ✅ USER PICKED NEW IMAGE
         const uploaded = await uploadFile(
           profileImage,
           UploadTypes.PROFILE_IMAGE,
           accessToken,
         );
-        if (uploaded) {
-          profileImageUrl = uploaded;
-        }
+        if (uploaded) profileImageUrl = uploaded;
+      } else {
+        // ✅ UNCHANGED
+        profileImageUrl = originalProfile.profile_image;
       }
 
-      // 3️⃣ Upload COVER image only if local
-      if (isLocalFile(coverImage)) {
+      /* ---------- COVER IMAGE ---------- */
+      if (coverImage === null) {
+        coverImageUrl = null;
+      } else if (isLocalFile(coverImage)) {
         const uploaded = await uploadFile(
           coverImage,
           UploadTypes.COVER_IMAGE,
           accessToken,
         );
-        if (uploaded) {
-          coverImageUrl = uploaded;
-        }
+        if (uploaded) coverImageUrl = uploaded;
+      } else {
+        coverImageUrl = originalProfile.cover_image;
       }
 
       // 4️⃣ Documents (WITH STEP-BY-STEP LOGS)
@@ -288,6 +307,7 @@ const Eopen = () => {
       );
       setAlertVisible(true);
     } finally {
+      savingRef.current = false;
       setLoading(false);
     }
   }, [

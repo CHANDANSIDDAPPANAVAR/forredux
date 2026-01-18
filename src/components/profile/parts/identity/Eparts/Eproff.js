@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+
 import {
   View,
   KeyboardAvoidingView,
@@ -10,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 
 import HeaderProfileSimple from './Components/Opennetwork/HeaderProfileSimple';
@@ -59,6 +60,12 @@ import {
 const Eproff = () => {
   const navigation = useNavigation();
   const { accessToken } = useSelector(state => state.auth);
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  const [isDirty, setIsDirty] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const pendingNavActionRef = React.useRef(null);
+  const savingRef = React.useRef(false);
 
   const [hydrated, setHydrated] = useState(false);
   const [originalProfile, setOriginalProfile] = useState(null);
@@ -193,14 +200,107 @@ const Eproff = () => {
       mounted = false;
     };
   }, [accessToken, hydrated, pickedLocation]);
+  useFocusEffect(
+    useCallback(() => {
+      const onBeforeRemove = e => {
+        if (!isDirty || savingRef.current) return;
+
+        e.preventDefault();
+        pendingNavActionRef.current = e.data.action;
+        setShowUnsavedModal(true);
+      };
+
+      navigation.addListener('beforeRemove', onBeforeRemove);
+      return () => navigation.removeListener('beforeRemove', onBeforeRemove);
+    }, [navigation, isDirty]),
+  );
+  useEffect(() => {
+    if (!hydrated || !originalProfile) return;
+
+    const updates = buildProfileUpdatePayload({
+      originalProfile,
+      profileData: {
+        name,
+        tagline,
+        namelocation,
+        bio,
+        gender,
+        birthYear,
+        selectedSkills,
+        experience,
+        selectedCerts,
+        companyName,
+        keywords,
+        services,
+        availability,
+        selectedLanguages,
+        phoneNumber,
+        email,
+        emergencyNumber,
+        upiId,
+        socialAccounts,
+        customLinks,
+        pickedLocation,
+        pickedAddress,
+      },
+      profileImageUrl:
+        profileImage === null
+          ? null
+          : isLocalFile(profileImage)
+          ? 'LOCAL'
+          : originalProfile.profile_image,
+      coverImageUrl:
+        coverImage === null
+          ? null
+          : isLocalFile(coverImage)
+          ? 'LOCAL'
+          : originalProfile.cover_image,
+      uploadedDocs: documents,
+      uploadedGallery: galleryImages,
+    });
+
+    setIsDirty(Object.keys(updates).length > 0);
+  }, [
+    hydrated,
+    originalProfile,
+    name,
+    tagline,
+    namelocation,
+    bio,
+    gender,
+    birthYear,
+    selectedSkills,
+    experience,
+    selectedCerts,
+    companyName,
+    keywords,
+    services,
+    availability,
+    selectedLanguages,
+    phoneNumber,
+    email,
+    emergencyNumber,
+    upiId,
+    socialAccounts,
+    customLinks,
+    pickedLocation,
+    pickedAddress,
+    profileImage,
+    coverImage,
+    documents,
+    galleryImages,
+  ]);
 
   /* ---------------- SAVE ---------------- */
   const handleSave = useCallback(async () => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+
     if (!accessToken || !originalProfile) return;
 
     setLoading(true);
     setIsSuccess(false);
-
+    await delay(2000);
     try {
       let profileImageUrl;
 
@@ -232,21 +332,22 @@ const Eproff = () => {
       } else {
         coverImageUrl = originalProfile.cover_image;
       }
+      let uploadedDocs = normalizeDocuments(documents);
+      const localDocs = documents.filter(d => d && d.uri && isLocalFile(d));
 
-      let uploadedGallery = galleryImages;
-      if (galleryImages.some(g => isLocalFile(g.uri))) {
-        uploadedGallery = await handleGalleryUploads(
-          galleryImages,
-          UploadTypes.GALLERY_IMAGE,
+      if (localDocs.length > 0) {
+        uploadedDocs = await handleDocumentUploads(
+          documents,
+          UploadTypes.DOCUMENT,
           accessToken,
         );
       }
 
-      let uploadedDocs = documents;
-      if (documents.some(doc => isLocalFile(doc))) {
-        uploadedDocs = await handleDocumentUploads(
-          documents,
-          UploadTypes.DOCUMENT,
+      let uploadedGallery = galleryImages;
+      if (galleryImages.some(isLocalFile)) {
+        uploadedGallery = await handleGalleryUploads(
+          galleryImages,
+          UploadTypes.GALLERY_IMAGE,
           accessToken,
         );
       }
@@ -298,6 +399,8 @@ const Eproff = () => {
       await saveLastUpdatedToCache(res.data.updated_at);
 
       setIsSuccess(true);
+      setIsDirty(false);
+
       setAlertTitle('Success');
       setAlertMessage('Profile updated successfully.');
       setAlertVisible(true);
@@ -306,6 +409,7 @@ const Eproff = () => {
       setAlertMessage('Something went wrong. Please try again.');
       setAlertVisible(true);
     } finally {
+      savingRef.current = false;
       setLoading(false);
     }
   }, [
@@ -464,6 +568,23 @@ const Eproff = () => {
             if (isSuccess) navigation.replace('Profile');
           }}
           onCancel={() => setAlertVisible(false)}
+        />
+        <ConfirmModal
+          visible={showUnsavedModal}
+          title="Unsaved Changes"
+          message="You have unsaved changes. Do you want to discard them?"
+          confirmText="discard"
+          onConfirm={() => {
+            setShowUnsavedModal(false);
+            if (pendingNavActionRef.current) {
+              navigation.dispatch(pendingNavActionRef.current);
+              pendingNavActionRef.current = null;
+            }
+          }}
+          onCancel={() => {
+            setShowUnsavedModal(false);
+            pendingNavActionRef.current = null;
+          }}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

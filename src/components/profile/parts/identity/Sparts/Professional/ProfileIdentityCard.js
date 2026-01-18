@@ -17,7 +17,7 @@ import { showToast } from '../../../../../util/alerts/toast';
 /* ----------------------------------
    CONSTANTS
 ----------------------------------- */
-const FALLBACK_AVATAR = require('../../../../../assets/util/no-img.png');
+const FALLBACK_AVATAR = require('../../../../../assets/choseaccount/assets/noprofile.png');
 const COPY_ICON = require('../../../../../assets/util/copyicon.png');
 
 /* ----------------------------------
