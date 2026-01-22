@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { fetchAndCacheProfile } from '../profilestore/Fechprofiledata';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Hederprofile from '../Sparts/opennetwork/Hederprofile';
 import Coverimg from '../Sparts/coverimg';
-import Profesprofile from '../Sparts/Professional/profesprofile';
 
 import ProfessionalInfo from '../Sparts/Professional/ProfessionalInfo';
 import ServicesAndPricingInfo from '../Sparts/Professional/ServicesAndPricingInfo';
@@ -83,7 +82,12 @@ const Professionals = ({ isPro }) => {
           <AvailabilitySection availability={profile?.availability} />
           <Documents documents={profile?.documents} />
           <ServicesAndPricingInfo services={profile?.services} />
-
+          {profile?.upi_id && (
+            <UPIPaymentButton
+              upiId={profile?.upi_id}
+              payeeName={profile?.name || 'User'}
+            />
+          )}
           <GalleryPreview galleryImages={profile?.gallery_images} />
           <CustomLinks customLinks={profile?.custom_links} />
           <AddressSection

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { fetchAndCacheProfile } from '../profilestore/Fechprofiledata';
 import { useSelector } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +18,8 @@ import Somesection from '../Sparts/opennetwork/somesection';
 import SelectedKeywordsInfo from '../Sparts/Business/SelectedKeywordsInfo';
 import CallChatActions from '../Sparts/services/CallChatActions';
 import UPIPaymentButton from '../Sparts/opennetwork/UPIPaymentButton';
+import GalleryPreview from '../Sparts/Business/GalleryPreview';
+import CustomLinks from '../Sparts/opennetwork/CustomLinks';
 
 const Service = ({ isPro }) => {
   const { accessToken } = useSelector(state => state.auth);
@@ -67,7 +69,6 @@ const Service = ({ isPro }) => {
             bio={profile?.bio}
             location={profile?.namelocation}
           />
-
           <CategoryExperienceInfo
             categories={profile?.selected_skills}
             experience={profile?.year_of_experience}
@@ -78,6 +79,8 @@ const Service = ({ isPro }) => {
           />
           <SelectedLanguages languages={profile?.selected_languages} />
           <AvailabilitySection availability={profile?.availability} />
+
+          <GalleryPreview galleryImages={profile?.gallery_images} />
           <Documents documents={profile?.documents} />
           <ServicesAndPricingInfo
             services={profile?.services}
@@ -97,7 +100,7 @@ const Service = ({ isPro }) => {
             phoneNumber={profile?.phone_number}
             email={profile?.email}
           />
-
+          <CustomLinks customLinks={profile?.custom_links} />
           <Somesection socialAccounts={profile?.social_accounts} />
           <SelectedKeywordsInfo keywords={profile?.keywords} />
         </View>

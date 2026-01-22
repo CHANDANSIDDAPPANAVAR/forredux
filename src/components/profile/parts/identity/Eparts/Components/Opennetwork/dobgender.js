@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -30,11 +30,9 @@ const GENDER_OPTIONS = [
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-const calculateAgeFromYear = year => {
+const calculateDiffFromYear = year => {
   const y = parseInt(year, 10);
-  if (isNaN(y) || y < 1900 || y > CURRENT_YEAR) {
-    return '';
-  }
+  if (isNaN(y) || y < 1900 || y > CURRENT_YEAR) return '';
   return CURRENT_YEAR - y;
 };
 
@@ -46,9 +44,13 @@ export default function GenderDobInput({
   setGender,
   birthYear,
   setBirthYear,
+  type = 'person', // person | business
 }) {
   const [modalVisible, setModalVisible] = useState(false);
-  const age = useMemo(() => calculateAgeFromYear(birthYear), [birthYear]);
+
+  const isBusiness = type === 'business';
+
+  const diff = useMemo(() => calculateDiffFromYear(birthYear), [birthYear]);
 
   const handleYearChange = value => {
     if (/^\d{0,4}$/.test(value)) {
@@ -56,95 +58,112 @@ export default function GenderDobInput({
     }
   };
 
-  const renderGenderItem = ({ item }) => {
-    const selected = item.short === gender;
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => {
-          setGender(item.short);
-          setModalVisible(false);
-        }}
-        style={[styles.option, selected && styles.optionSelected]}
-      >
-        <Text
-          style={[styles.optionText, selected && styles.optionTextSelected]}
-        >
-          {item.label}
-        </Text>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{item.short || 'N/A'}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <View style={styles.container}>
-      {/* Gender */}
-      <Text style={styles.label}>Gender</Text>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => {
-          Keyboard.dismiss();
-          setModalVisible(true);
-        }}
-        style={styles.genderInput}
-      >
-        <Text style={[styles.genderValue, !gender && styles.placeholder]}>
-          {gender ? getGenderLabel(gender) : 'Select gender'}
-        </Text>
-      </TouchableOpacity>
+      {/* GENDER (ONLY IF NOT BUSINESS) */}
+      {!isBusiness && (
+        <>
+          <Text style={styles.label}>Gender</Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              Keyboard.dismiss();
+              setModalVisible(true);
+            }}
+            style={styles.genderInput}
+          >
+            <Text style={[styles.genderValue, !gender && styles.placeholder]}>
+              {gender ? getGenderLabel(gender) : 'Select gender'}
+            </Text>
+          </TouchableOpacity>
+        </>
+      )}
 
-      {/* Birth Year */}
+      {/* YEAR */}
       <View style={styles.yearHeader}>
-        <Text style={styles.label}>Birth Year</Text>
-        {age !== '' && <Text style={styles.age}>Age: {age}</Text>}
+        <Text style={styles.label}>
+          {isBusiness ? 'Established Year' : 'Birth Year'}
+        </Text>
+        {diff !== '' && (
+          <Text style={styles.age}>
+            {isBusiness ? 'Years in Business' : 'Age'}: {diff}
+          </Text>
+        )}
       </View>
+
       <TextInput
         value={birthYear}
         onChangeText={handleYearChange}
-        placeholder="e.g. 1998"
+        placeholder={isBusiness ? 'e.g. 2015' : 'e.g. 1998'}
         placeholderTextColor="#9a9a9a"
         keyboardType="number-pad"
         maxLength={4}
         style={styles.yearInput}
       />
 
-      {/* Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-          <View style={styles.overlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.modal}>
-                <Text style={styles.modalTitle}>Select Gender</Text>
-                <FlatList
-                  data={GENDER_OPTIONS}
-                  renderItem={renderGenderItem}
-                  keyExtractor={item => item.label}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      {/* GENDER MODAL */}
+      {!isBusiness && (
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+            <View style={styles.overlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.modal}>
+                  <Text style={styles.modalTitle}>Select Gender</Text>
+                  <FlatList
+                    data={GENDER_OPTIONS}
+                    keyExtractor={item => item.label}
+                    renderItem={({ item }) => {
+                      const selected = item.short === gender;
+                      return (
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            setGender(item.short);
+                            setModalVisible(false);
+                          }}
+                          style={[
+                            styles.option,
+                            selected && styles.optionSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.optionText,
+                              selected && styles.optionTextSelected,
+                            ]}
+                          >
+                            {item.label}
+                          </Text>
+                          <View style={styles.badge}>
+                            <Text style={styles.badgeText}>
+                              {item.short || 'N/A'}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 12,
+    marginBottom: 8,
   },
-
   label: {
     fontSize: 13,
     color: '#555',
@@ -152,7 +171,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontFamily: 'Poppins-SemiBold',
   },
-
   genderInput: {
     backgroundColor: '#000',
     borderRadius: 8,
@@ -161,30 +179,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
   },
-
   genderValue: {
     fontSize: 16,
     color: '#fff',
     fontFamily: 'Poppins-Regular',
   },
-
   placeholder: {
     color: '#aaa',
   },
-
   yearHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 14,
     marginHorizontal: 4,
   },
-
   age: {
     fontSize: 12,
     color: '#888',
     fontFamily: 'Poppins-Regular',
   },
-
   yearInput: {
     marginTop: 6,
     backgroundColor: '#f4f4f4',
@@ -197,16 +210,13 @@ const styles = StyleSheet.create({
     color: '#222',
     fontFamily: 'Poppins-Regular',
   },
-
   overlay: {
     flex: 1,
-
     backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-
   modal: {
     width: '100%',
     maxHeight: '80%',
@@ -215,7 +225,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
   },
-
   modalTitle: {
     fontSize: 18,
     textAlign: 'center',
@@ -223,7 +232,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
     color: '#000',
   },
-
   option: {
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -235,29 +243,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-
   optionSelected: {
     backgroundColor: '#000',
     borderColor: '#000',
   },
-
   optionText: {
     fontSize: 14,
     color: '#444',
     fontFamily: 'Poppins-Regular',
   },
-
   optionTextSelected: {
     color: '#fff',
   },
-
   badge: {
     backgroundColor: '#000',
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 6,
   },
-
   badgeText: {
     color: '#fff',
     fontSize: 12,

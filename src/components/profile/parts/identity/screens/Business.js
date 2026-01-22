@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchAndCacheProfile } from '../profilestore/Fechprofiledata';
 import { useSelector } from 'react-redux';
 import Hederprofile from '../Sparts/opennetwork/Hederprofile';
 import Coverimg from '../Sparts/coverimg';
-import BussLogoPreview from '../Sparts/Business/BussLogoPreview';
-import BusinessBasicInfo from '../Sparts/Business/BusinessBasicInfo';
+
 import ContactSection from '../Sparts/opennetwork/ContactSection';
 import SelectedLanguages from '../Sparts/opennetwork/SelectedLanguages';
 import AvailabilitySection from '../Sparts/Business/AvailabilitySection';

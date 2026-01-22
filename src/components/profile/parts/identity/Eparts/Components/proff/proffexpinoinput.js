@@ -9,10 +9,12 @@ import {
   Keyboard,
 } from 'react-native';
 
-/* ----------------------------------
-   CONSTANTS
------------------------------------ */
-const skillSuggestions = [
+/* =====================================================
+   SUGGESTION LISTS
+===================================================== */
+
+/* ---------- PROFESSIONAL ---------- */
+const PROFESSIONAL_SUGGESTIONS = [
   // Medical
   'General Practitioner',
   'Dentist',
@@ -30,85 +32,107 @@ const skillSuggestions = [
   'Criminal Lawyer',
   'Family Lawyer',
   'Tax Lawyer',
-  'Intellectual Property Lawyer',
   'Immigration Lawyer',
-  'Civil Rights Lawyer',
 
-  // IT & Technical
+  // IT
   'Software Developer',
   'Web Developer',
   'Mobile App Developer',
   'Data Scientist',
-  'Cybersecurity Specialist',
   'IT Consultant',
 
-  // Business
+  // Business & Creative
   'Business Consultant',
   'Financial Advisor',
-  'Marketing Consultant',
-  'Sales Consultant',
-  'Startup Mentor',
-  'HR Consultant',
-
-  // Creative
   'Graphic Designer',
   'UI/UX Designer',
   'Photographer',
-  'Videographer',
   'Content Writer',
-  'Social Media Manager',
-  'Animator',
-
-  // Trades
-  'Plumber',
-  'Electrician',
-  'Carpenter',
-  'Painter',
-  'Mechanic',
-  'Interior Designer',
-
-  // Wellness
-  'Hair Stylist',
-  'Makeup Artist',
-  'Skincare Specialist',
-  'Massage Therapist',
-  'Nail Technician',
-  'Personal Trainer',
-  'Yoga Instructor',
-  'Dietitian',
-
-  // Hospitality
-  'Chef',
-  'Event Planner',
-  'Hotel Manager',
-  'Tour Guide',
 ];
 
-/* ----------------------------------
-   COMPONENT
------------------------------------ */
-const ProffExperienceInfo = ({ selectedSkills, setSelectedSkills }) => {
+/* ---------- BUSINESS ---------- */
+const BUSINESS_SUGGESTIONS = [
+  'Restaurant',
+  'Cafe',
+  'Bakery',
+  'Salon',
+  'Spa',
+  'Boutique',
+  'Fitness Center',
+  'Coaching Institute',
+  'Travel Agency',
+  'Real Estate',
+  'Event Management',
+  'IT Company',
+  'Marketing Agency',
+];
+
+/* ---------- SERVICE ---------- */
+const SERVICE_SUGGESTIONS = [
+  'Plumbing',
+  'Electrical Repair',
+  'AC Repair',
+  'Refrigerator Repair',
+  'Washing Machine Repair',
+  'House Cleaning',
+  'Pest Control',
+  'Painting',
+  'Carpentry',
+  'Home Renovation',
+  'Interior Work',
+];
+
+/* =====================================================
+   CONFIG BY TYPE
+===================================================== */
+const CONFIG = {
+  professional: {
+    label: 'Professional Area',
+    placeholder: 'e.g. Lawyer, Doctor, Developer...',
+    suggestions: PROFESSIONAL_SUGGESTIONS,
+  },
+  business: {
+    label: 'Business Category',
+    placeholder: 'e.g. Restaurant, Salon, Travel Agency...',
+    suggestions: BUSINESS_SUGGESTIONS,
+  },
+  service: {
+    label: 'Services Offered',
+    placeholder: 'e.g. Plumbing, AC Repair, Painting...',
+    suggestions: SERVICE_SUGGESTIONS,
+  },
+};
+
+/* =====================================================
+   COMPONENT (NAME + PROPS UNCHANGED)
+===================================================== */
+const ProffExperienceInfo = ({
+  selectedSkills,
+  setSelectedSkills,
+  type = 'professional', // optional, default professional
+}) => {
   const [search, setSearch] = useState('');
+
+  const { label, placeholder, suggestions } =
+    CONFIG[type] || CONFIG.professional;
 
   const filteredSuggestions = useMemo(() => {
     if (!search.trim()) return [];
 
     const term = search.toLowerCase();
-    return skillSuggestions.filter(
-      skill =>
-        skill.toLowerCase().includes(term) &&
-        !selectedSkills.includes(skill.toLowerCase()),
+    return suggestions.filter(
+      item =>
+        item.toLowerCase().includes(term) &&
+        !selectedSkills.includes(item.toLowerCase()),
     );
-  }, [search, selectedSkills]);
+  }, [search, selectedSkills, suggestions]);
 
   const addSkill = useCallback(
-    skill => {
-      const normalized = skill.toLowerCase();
+    value => {
+      const normalized = value.toLowerCase().trim();
+      if (!normalized || selectedSkills.includes(normalized)) return;
 
-      if (!selectedSkills.includes(normalized)) {
-        setSelectedSkills(prev => [...prev, normalized]);
-      }
-
+      setSelectedSkills(prev => [...prev, normalized]);
       setSearch('');
       Keyboard.dismiss();
     },
@@ -116,26 +140,22 @@ const ProffExperienceInfo = ({ selectedSkills, setSelectedSkills }) => {
   );
 
   const removeSkill = useCallback(
-    skill => {
-      setSelectedSkills(prev => prev.filter(s => s !== skill));
+    value => {
+      setSelectedSkills(prev => prev.filter(v => v !== value));
     },
     [setSelectedSkills],
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Professional Area</Text>
+      <Text style={styles.label}>{label}</Text>
 
-      {/* SELECTED TAGS */}
+      {/* TAGS */}
       <View style={styles.tagContainer}>
-        {selectedSkills.map(skill => (
-          <View key={skill} style={styles.tag}>
-            <Text style={styles.tagText}>{skill}</Text>
-            <TouchableOpacity
-              style={styles.removeBtn}
-              onPress={() => removeSkill(skill)}
-              hitSlop={10}
-            >
+        {selectedSkills.map(item => (
+          <View key={item} style={styles.tag}>
+            <Text style={styles.tagText}>{item}</Text>
+            <TouchableOpacity onPress={() => removeSkill(item)}>
               <Text style={styles.removeText}>×</Text>
             </TouchableOpacity>
           </View>
@@ -147,24 +167,24 @@ const ProffExperienceInfo = ({ selectedSkills, setSelectedSkills }) => {
         style={styles.input}
         value={search}
         onChangeText={setSearch}
-        onSubmitEditing={() => {
-          if (search.trim()) {
-            addSkill(search.trim());
-          }
-        }}
-        placeholder="e.g. Lawyer, Doctor, CA..."
+        placeholder={placeholder}
         placeholderTextColor="#999"
         returnKeyType="done"
+        onSubmitEditing={() => addSkill(search)}
       />
 
       {/* SUGGESTIONS */}
       {search.length > 0 && filteredSuggestions.length > 0 && (
-        <ScrollView style={styles.dropdown} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.dropdown}
+          keyboardShouldPersistTaps="always"
+          nestedScrollEnabled={true} // ✅ Android nested scroll fix
+        >
           {filteredSuggestions.slice(0, 10).map(item => (
             <TouchableOpacity
               key={item}
-              onPress={() => addSkill(item)}
               style={styles.dropdownItem}
+              onPress={() => addSkill(item)}
               activeOpacity={0.7}
             >
               <Text>{item}</Text>
@@ -178,14 +198,13 @@ const ProffExperienceInfo = ({ selectedSkills, setSelectedSkills }) => {
 
 export default ProffExperienceInfo;
 
-/* ----------------------------------
+/* =====================================================
    STYLES
------------------------------------ */
+===================================================== */
 const styles = StyleSheet.create({
   container: {
     marginBottom: 8,
   },
-
   label: {
     fontSize: 13,
     color: '#555',
@@ -193,7 +212,6 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontFamily: 'Poppins-SemiBold',
   },
-
   input: {
     backgroundColor: '#f5f5f5',
     paddingVertical: 12,
@@ -205,7 +223,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
-
   dropdown: {
     maxHeight: 160,
     backgroundColor: '#F9F9F9',
@@ -213,20 +230,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     marginTop: 4,
+    zIndex: 10,
   },
-
   dropdownItem: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#EEE',
   },
-
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginBottom: 8,
   },
-
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -237,20 +252,15 @@ const styles = StyleSheet.create({
     marginRight: 6,
     marginBottom: 6,
   },
-
   tagText: {
     fontSize: 13,
     color: '#fff',
     fontFamily: 'Poppins-SemiBold',
     textTransform: 'capitalize',
+    marginRight: 6,
   },
-
-  removeBtn: {
-    paddingLeft: 6,
-  },
-
   removeText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#fff',
     fontFamily: 'Poppins-SemiBold',
   },

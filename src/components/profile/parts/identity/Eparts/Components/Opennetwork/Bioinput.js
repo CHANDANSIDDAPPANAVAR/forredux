@@ -1,31 +1,69 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-const MAX_LENGTH = 200;
+/* =====================================================
+   CONFIG BY TYPE
+===================================================== */
+const BIO_CONFIG = {
+  person: {
+    label: 'Bio / About Me',
+    placeholder: 'Tell us about yourself',
+    maxLength: 200,
+  },
 
-export default function BioInput({ bio, setBio }) {
+  professional: {
+    label: 'Professional Summary',
+    placeholder: 'Briefly describe your professional experience',
+    maxLength: 300,
+  },
+
+  business: {
+    label: 'About Business',
+    placeholder: 'Describe your business, vision, and offerings',
+    maxLength: 400,
+  },
+
+  service: {
+    label: 'Service Description',
+    placeholder: 'Describe the services you provide',
+    maxLength: 300,
+  },
+};
+
+/* =====================================================
+   COMPONENT (PROPS UNCHANGED)
+===================================================== */
+export default function BioInput({
+  bio,
+  setBio,
+  type = 'person', // person | professional | business | service
+}) {
+  const config = BIO_CONFIG[type] || BIO_CONFIG.person;
+  const remaining = config.maxLength - (bio?.length || 0);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Bio / About Me</Text>
+      <Text style={styles.label}>{config.label}</Text>
 
       <TextInput
         style={[styles.input, styles.textarea]}
-        placeholder="Tell us about yourself"
+        placeholder={config.placeholder}
         placeholderTextColor="#999"
         multiline
         numberOfLines={5}
-        maxLength={MAX_LENGTH}
+        maxLength={config.maxLength}
         value={bio}
         onChangeText={setBio}
       />
 
-      <Text style={styles.charCount}>
-        {MAX_LENGTH - (bio?.length || 0)} characters left
-      </Text>
+      <Text style={styles.charCount}>{remaining} characters left</Text>
     </View>
   );
 }
 
+/* =====================================================
+   STYLES
+===================================================== */
 const styles = StyleSheet.create({
   container: {
     marginBottom: 14,

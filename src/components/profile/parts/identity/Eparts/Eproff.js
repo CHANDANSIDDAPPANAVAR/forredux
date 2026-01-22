@@ -64,8 +64,8 @@ const Eproff = () => {
 
   const [isDirty, setIsDirty] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
-  const pendingNavActionRef = React.useRef(null);
-  const savingRef = React.useRef(false);
+  const pendingNavActionRef = useRef(null);
+  const savingRef = useRef(false);
 
   const [hydrated, setHydrated] = useState(false);
   const [originalProfile, setOriginalProfile] = useState(null);
@@ -469,12 +469,16 @@ const Eproff = () => {
 
           <View style={styles.profileInputSection}>
             <NameInput name={name} setName={setName} />
-            <Tagline tagline={tagline} setTagline={setTagline} />
+            <Tagline
+              type="professional"
+              tagline={tagline}
+              setTagline={setTagline}
+            />
             <LocationInput
               Namelocation={namelocation}
               setNameLocation={setNameLocation}
             />
-            <BioInput bio={bio} setBio={setBio} />
+            <BioInput type="professional" bio={bio} setBio={setBio} />
             <GenderDobInput
               gender={gender}
               setGender={setGender}

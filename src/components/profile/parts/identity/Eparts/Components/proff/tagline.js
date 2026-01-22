@@ -1,9 +1,39 @@
 import React, { memo, useCallback } from 'react';
 import { View, Text, TextInput, StyleSheet, Platform } from 'react-native';
 
-const MAX_LENGTH = 100;
+/* =====================================================
+   CONFIG BY TYPE
+===================================================== */
+const TAGLINE_CONFIG = {
+  professional: {
+    label: 'Professional Tagline',
+    placeholder: 'Short line describing your profession',
+    maxLength: 100,
+  },
 
-const TaglineInput = ({ tagline = '', setTagline }) => {
+  business: {
+    label: 'Business Tagline',
+    placeholder: 'Short line describing your business',
+    maxLength: 120,
+  },
+
+  default: {
+    label: 'Tagline',
+    placeholder: 'Short line that describes you or your work',
+    maxLength: 100,
+  },
+};
+
+/* =====================================================
+   COMPONENT (PROPS UNCHANGED)
+===================================================== */
+const TaglineInput = ({
+  tagline = '',
+  setTagline,
+  type = 'professional', // professional | business
+}) => {
+  const config = TAGLINE_CONFIG[type] || TAGLINE_CONFIG.default;
+
   const handleChange = useCallback(
     text => {
       // normalize spaces (production-safe)
@@ -15,25 +45,25 @@ const TaglineInput = ({ tagline = '', setTagline }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Tagline</Text>
+      <Text style={styles.label}>{config.label}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Short line that describes you or your work"
+        placeholder={config.placeholder}
         placeholderTextColor="#999"
         multiline
-        maxLength={MAX_LENGTH}
+        maxLength={config.maxLength}
         value={tagline}
         onChangeText={handleChange}
         textAlignVertical="top"
         returnKeyType="done"
-        blurOnSubmit={true}
-        accessibilityLabel="Tagline input"
-        accessibilityHint="Enter a short tagline, up to 100 characters"
+        blurOnSubmit
+        accessibilityLabel={`${config.label} input`}
+        accessibilityHint={`Enter a short tagline, up to ${config.maxLength} characters`}
       />
 
       <Text style={styles.charCount}>
-        {MAX_LENGTH - tagline.length} characters left
+        {config.maxLength - tagline.length} characters left
       </Text>
     </View>
   );
@@ -41,9 +71,9 @@ const TaglineInput = ({ tagline = '', setTagline }) => {
 
 export default memo(TaglineInput);
 
-/* ----------------------------------
+/* =====================================================
    STYLES
------------------------------------ */
+===================================================== */
 const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
@@ -67,7 +97,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     borderWidth: 1,
     borderColor: '#ddd',
-    minHeight: 64, // stable height across platforms
+    minHeight: 64,
   },
 
   charCount: {

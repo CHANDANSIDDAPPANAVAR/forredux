@@ -1,13 +1,19 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-export default function NameInput({ name, setName }) {
+export default function NameInput({
+  name,
+  setName,
+  label = 'Name', // fallback
+  placeholder = 'Enter your name', // fallback
+}) {
   return (
     <View style={styles.inputSection}>
-      <Text style={styles.label}>Name</Text>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
+
       <TextInput
         style={styles.input}
-        placeholder="Enter your name"
+        placeholder={placeholder}
         placeholderTextColor="#999"
         value={name}
         onChangeText={setName}
@@ -20,24 +26,24 @@ export default function NameInput({ name, setName }) {
 
 const styles = StyleSheet.create({
   inputSection: {
-    marginBottom: 12, // slightly increased for better breathing room
+    marginBottom: 12,
   },
   label: {
-    fontSize: 13, // slightly smaller, more elegant for labels
+    fontSize: 13,
     color: '#555',
     marginBottom: 4,
     marginLeft: 5,
-    fontFamily: 'Poppins-SemiBold', // SemiBold is smoother for labels
+    fontFamily: 'Poppins-SemiBold',
   },
   input: {
     backgroundColor: '#f5f5f59a',
-    paddingVertical: 12, // slightly taller input for touch comfort
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 8,
     fontSize: 15,
     color: '#222',
     fontFamily: 'Poppins-Regular',
     borderWidth: 1,
-    borderColor: '#ddd', // subtle border for better definition
+    borderColor: '#ddd',
   },
 });
