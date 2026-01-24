@@ -23,7 +23,13 @@ export const useEventSave = ({ form, navigation, event_id, originalEvent }) => {
       /* -----------------------------
          🖼️ PROFILE IMAGE
       ----------------------------- */
-      if (
+      /* -----------------------------
+   🖼️ PROFILE IMAGE
+----------------------------- */
+      if (form.eventImage === null && originalEvent?.profile_image) {
+        // ✅ user deleted image
+        profileImageUrl = null;
+      } else if (
         isLocalFile(form.eventImage) &&
         form.eventImage !== originalEvent?.profile_image
       ) {
@@ -36,7 +42,13 @@ export const useEventSave = ({ form, navigation, event_id, originalEvent }) => {
       /* -----------------------------
          🖼️ COVER IMAGE
       ----------------------------- */
-      if (
+      /* -----------------------------
+   🖼️ COVER IMAGE
+----------------------------- */
+      if (form.coverImage === null && originalEvent?.cover_image) {
+        // ✅ user deleted image
+        coverImageUrl = null;
+      } else if (
         isLocalFile(form.coverImage) &&
         form.coverImage !== originalEvent?.cover_image
       ) {

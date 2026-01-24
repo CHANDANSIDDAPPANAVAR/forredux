@@ -65,20 +65,24 @@ const EventImage = ({ source }) => {
     return resolveMediaUrl(source);
   }, [source]);
 
-  const showImage = !!resolvedUri && !failed;
+  // ✅ NO IMAGE AT ALL → NO UI
+  if (!resolvedUri) {
+    return null;
+  }
+
+  const showImage = !failed;
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         activeOpacity={0.9}
-        onPress={() => showImage && setPreviewVisible(true)}
-        disabled={!showImage}
+        onPress={() => setPreviewVisible(true)}
       >
         <View style={styles.avatarWrapper}>
           {!loaded && <Skeleton />}
 
           <Image
-            source={showImage ? { uri: resolvedUri } : FALLBACK_IMAGE}
+            source={{ uri: resolvedUri }}
             style={styles.avatar}
             resizeMode="cover"
             onLoad={() => setLoaded(true)}
@@ -121,12 +125,13 @@ export default memo(EventImage);
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop: -50,
+    marginTop: -80,
+    zIndex: 5,
   },
   avatarWrapper: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 240,
+    height: 180,
+    borderRadius: 15,
     backgroundColor: '#f3f4f6',
     overflow: 'hidden',
     borderWidth: 4,
@@ -142,7 +147,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: '100%',
     height: '100%',
-    borderRadius: 55,
+    borderRadius: 15,
   },
 
   skeleton: {

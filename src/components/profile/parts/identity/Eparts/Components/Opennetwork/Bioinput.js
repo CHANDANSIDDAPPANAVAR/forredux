@@ -51,8 +51,10 @@ const BioInput = ({
 
   const handleChange = useCallback(
     text => {
-      // normalize spaces (production-safe)
-      const normalized = text.replace(/\s+/g, ' ');
+      const normalized = text
+        .replace(/[ \t]+/g, ' ') // keep paragraphs
+        .replace(/\n{3,}/g, '\n\n'); // prevent spam enters
+
       setBio(normalized);
     },
     [setBio],
@@ -72,10 +74,9 @@ const BioInput = ({
         value={bio}
         onChangeText={handleChange}
         textAlignVertical="top"
-        returnKeyType="done"
-        blurOnSubmit
-        accessibilityLabel={`${config.label} input`}
-        accessibilityHint={`Enter up to ${config.maxLength} characters`}
+        blurOnSubmit={false}
+        returnKeyType="default"
+        keyboardType="default"
       />
 
       <Text style={styles.charCount}>{remaining} characters left</Text>
