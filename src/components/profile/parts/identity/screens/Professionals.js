@@ -64,7 +64,6 @@ const Professionals = ({ isPro }) => {
           tagline={profile?.tagline}
           location={profile?.namelocation}
           phoneNumber={profile?.phone_number}
-          upiId={profile?.upi_id}
           onChatPress={() =>
             navigation.navigate('Chat', { userId: profile?.user_id })
           }

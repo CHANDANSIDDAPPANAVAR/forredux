@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import React, { memo, useCallback } from 'react';
+import { View, Text, TextInput, StyleSheet, Platform } from 'react-native';
 
 /* =====================================================
    CONFIG BY TYPE
@@ -28,18 +28,35 @@ const BIO_CONFIG = {
     placeholder: 'Describe the services you provide',
     maxLength: 300,
   },
+
+  /* ⭐ NEW: EVENT SUPPORT */
+  event: {
+    label: 'Event Description',
+    placeholder:
+      'Describe the event, what to expect, and any important details',
+    maxLength: 500,
+  },
 };
 
 /* =====================================================
-   COMPONENT (PROPS UNCHANGED)
+   COMPONENT
 ===================================================== */
-export default function BioInput({
-  bio,
+const BioInput = ({
+  bio = '',
   setBio,
-  type = 'person', // person | professional | business | service
-}) {
+  type, // person | professional | business | service | event
+}) => {
   const config = BIO_CONFIG[type] || BIO_CONFIG.person;
-  const remaining = config.maxLength - (bio?.length || 0);
+  const remaining = config.maxLength - bio.length;
+
+  const handleChange = useCallback(
+    text => {
+      // normalize spaces (production-safe)
+      const normalized = text.replace(/\s+/g, ' ');
+      setBio(normalized);
+    },
+    [setBio],
+  );
 
   return (
     <View style={styles.container}>
@@ -53,20 +70,27 @@ export default function BioInput({
         numberOfLines={5}
         maxLength={config.maxLength}
         value={bio}
-        onChangeText={setBio}
+        onChangeText={handleChange}
+        textAlignVertical="top"
+        returnKeyType="done"
+        blurOnSubmit
+        accessibilityLabel={`${config.label} input`}
+        accessibilityHint={`Enter up to ${config.maxLength} characters`}
       />
 
       <Text style={styles.charCount}>{remaining} characters left</Text>
     </View>
   );
-}
+};
+
+export default memo(BioInput);
 
 /* =====================================================
    STYLES
 ===================================================== */
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
 
   label: {
@@ -79,9 +103,9 @@ const styles = StyleSheet.create({
 
   input: {
     backgroundColor: '#f5f5f5',
-    paddingVertical: 12,
+    paddingVertical: Platform.OS === 'ios' ? 14 : 12,
     paddingHorizontal: 12,
-    borderRadius: 6,
+    borderRadius: 10,
     fontSize: 15,
     color: '#222',
     fontFamily: 'Poppins-Regular',
@@ -90,7 +114,7 @@ const styles = StyleSheet.create({
   },
 
   textarea: {
-    height: 120,
+    minHeight: 120,
     textAlignVertical: 'top',
   },
 

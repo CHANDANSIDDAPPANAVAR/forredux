@@ -373,9 +373,7 @@ const Eserv = () => {
         return;
       }
 
-      const res = await api.patch('/api/user/upserviceProfile', updates, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await api.patch('/api/user/upserviceProfile', updates);
 
       await saveProfileToCache(res.data);
       await saveLastUpdatedToCache(res.data.updated_at);

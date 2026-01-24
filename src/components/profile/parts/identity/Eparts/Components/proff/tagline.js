@@ -17,20 +17,26 @@ const TAGLINE_CONFIG = {
     maxLength: 120,
   },
 
+  event: {
+    label: 'Event Tagline',
+    placeholder: 'e.g. A beautiful celebration of love',
+    maxLength: 140,
+  },
+
   default: {
     label: 'Tagline',
-    placeholder: 'Short line that describes you or your work',
+    placeholder: 'Short line that describes this',
     maxLength: 100,
   },
 };
 
 /* =====================================================
-   COMPONENT (PROPS UNCHANGED)
+   COMPONENT
 ===================================================== */
 const TaglineInput = ({
   tagline = '',
   setTagline,
-  type = 'professional', // professional | business
+  type, // professional | business | event
 }) => {
   const config = TAGLINE_CONFIG[type] || TAGLINE_CONFIG.default;
 
@@ -76,7 +82,7 @@ export default memo(TaglineInput);
 ===================================================== */
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 10,
+    marginBottom: 14,
   },
 
   label: {

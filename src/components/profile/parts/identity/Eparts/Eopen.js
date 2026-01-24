@@ -288,9 +288,7 @@ const Eopen = () => {
       }
 
       // 7️⃣ Update profile
-      const res = await api.patch('/api/user/updateProfile', updates, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const res = await api.patch('/api/user/updateProfile', updates);
 
       await saveProfileToCache(res.data);
       await saveLastUpdatedToCache(res.data.updated_at);

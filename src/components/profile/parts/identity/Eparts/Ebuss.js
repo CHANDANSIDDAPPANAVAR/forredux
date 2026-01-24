@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { fetchAndCacheProfile } from '../profilestore/Fechprofiledata';
 import { useSelector } from 'react-redux';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HeaderProfileSimple from './Components/Opennetwork/HeaderProfileSimple';
 import CoverImagePicker from './Components/Opennetwork/Coverimageuplod';
@@ -31,19 +32,52 @@ import LocationSection from './Components/Opennetwork/LocationSection';
 import UpiInput from './Components/Opennetwork/UpiInput';
 import SocialMediaInputs from './Components/Opennetwork/someinput';
 import CustomLinksInput from './Components/Opennetwork/costoumlink';
+
+import {
+  uploadFile,
+  handleDocumentUploads,
+  handleGalleryUploads,
+  isLocalFile,
+  UploadTypes,
+  normalizeDocuments,
+} from './uplods/profffileUploadUtils';
+
+import { buildProfileUpdatePayload } from './uplods/PayloadUtilsproff';
+import {
+  saveProfileToCache,
+  saveLastUpdatedToCache,
+} from '../profilestore/Asystore';
+import ConfirmModal from '../../../../util/alerts/ConfirmModal';
+import api from '../../../../../services/api';
 const Ebuss = () => {
+  const navigation = useNavigation();
   const { accessToken } = useSelector(state => state.auth);
-  const [loading, setLoading] = useState(false);
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  const [isDirty, setIsDirty] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const pendingNavActionRef = useRef(null);
+  const savingRef = useRef(false);
+
   const [hydrated, setHydrated] = useState(false);
   const [originalProfile, setOriginalProfile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  /* ---------------- STATE ---------------- */
   const [coverImage, setCoverImage] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
   const [name, setName] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [birthYear, setBirthYear] = useState('');
+  const [tagline, setTagline] = useState('');
   const [namelocation, setNameLocation] = useState('');
   const [bio, setBio] = useState('');
-  const [tagline, setTagline] = useState('');
+
+  const [birthYear, setBirthYear] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState([]);
+
   const [keywords, setKeywords] = useState([]);
 
   const [galleryImages, setGalleryImages] = useState([]);
@@ -66,6 +100,7 @@ const Ebuss = () => {
     setModalVisible(false);
   }, []);
 
+  /* ---------------- LOAD PROFILE (SAFE HYDRATION) ---------------- */
   useEffect(() => {
     if (!accessToken || hydrated) return;
 
@@ -80,15 +115,18 @@ const Ebuss = () => {
       setCoverImage(prev => prev ?? data.cover_image ?? null);
       setProfileImage(prev => prev ?? data.profile_image ?? null);
       setName(prev => (prev !== '' ? prev : data.name || ''));
-      setSelectedSkills(prev =>
-        prev.length ? prev : data.selected_skills || '',
-      );
+      setTagline(prev => (prev !== '' ? prev : data.tagline || ''));
+      setNameLocation(prev => (prev !== '' ? prev : data.namelocation || ''));
+      setBio(prev => (prev !== '' ? prev : data.bio || ''));
+
       setBirthYear(prev =>
         prev !== '' ? prev : data.birth_year ? String(data.birth_year) : '',
       );
-      setNameLocation(prev => (prev !== '' ? prev : data.namelocation || ''));
-      setBio(prev => (prev !== '' ? prev : data.bio || ''));
-      setTagline(prev => (prev !== '' ? prev : data.tagline || ''));
+
+      setSelectedSkills(prev =>
+        prev.length ? prev : data.selected_skills || '',
+      );
+
       setKeywords(prev => (prev.length ? prev : data.keywords || []));
 
       // ⬇️ inside load()
@@ -133,6 +171,7 @@ const Ebuss = () => {
           longitude: data.longitude,
         });
       }
+
       setHydrated(true);
     };
 
@@ -140,9 +179,237 @@ const Ebuss = () => {
     return () => {
       mounted = false;
     };
-  }, [accessToken, hydrated]);
+  }, [accessToken, hydrated, pickedLocation]);
+  useFocusEffect(
+    useCallback(() => {
+      const onBeforeRemove = e => {
+        if (!isDirty || savingRef.current) return;
 
-  const handleSave = () => {};
+        e.preventDefault();
+        pendingNavActionRef.current = e.data.action;
+        setShowUnsavedModal(true);
+      };
+
+      navigation.addListener('beforeRemove', onBeforeRemove);
+      return () => navigation.removeListener('beforeRemove', onBeforeRemove);
+    }, [navigation, isDirty]),
+  );
+  useEffect(() => {
+    if (!hydrated || !originalProfile) return;
+
+    const updates = buildProfileUpdatePayload({
+      originalProfile,
+      profileData: {
+        name,
+        tagline,
+        namelocation,
+        bio,
+
+        birthYear,
+        selectedSkills,
+
+        keywords,
+
+        availability,
+        selectedLanguages,
+        phoneNumber,
+        email,
+        emergencyNumber,
+        upiId,
+        socialAccounts,
+        customLinks,
+        pickedLocation,
+        pickedAddress,
+      },
+      profileImageUrl:
+        profileImage === null
+          ? null
+          : isLocalFile(profileImage)
+          ? 'LOCAL'
+          : originalProfile.profile_image,
+      coverImageUrl:
+        coverImage === null
+          ? null
+          : isLocalFile(coverImage)
+          ? 'LOCAL'
+          : originalProfile.cover_image,
+      uploadedDocs: documents,
+      uploadedGallery: galleryImages,
+    });
+
+    setIsDirty(Object.keys(updates).length > 0);
+  }, [
+    hydrated,
+    originalProfile,
+    name,
+    tagline,
+    namelocation,
+    bio,
+
+    birthYear,
+    selectedSkills,
+
+    keywords,
+
+    availability,
+    selectedLanguages,
+    phoneNumber,
+    email,
+    emergencyNumber,
+    upiId,
+    socialAccounts,
+    customLinks,
+    pickedLocation,
+    pickedAddress,
+    profileImage,
+    coverImage,
+    documents,
+    galleryImages,
+  ]);
+
+  /* ---------------- SAVE ---------------- */
+  const handleSave = useCallback(async () => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+
+    if (!accessToken || !originalProfile) return;
+
+    setLoading(true);
+    setIsSuccess(false);
+    await delay(2000);
+    try {
+      let profileImageUrl;
+
+      if (profileImage === null) {
+        // User removed image
+        profileImageUrl = null;
+      } else if (isLocalFile(profileImage)) {
+        // New image selected
+        profileImageUrl = await uploadFile(
+          profileImage,
+          UploadTypes.PROFILE_IMAGE,
+          accessToken,
+        );
+      } else {
+        // Existing remote image
+        profileImageUrl = originalProfile.profile_image;
+      }
+
+      let coverImageUrl;
+
+      if (coverImage === null) {
+        coverImageUrl = null;
+      } else if (isLocalFile(coverImage)) {
+        coverImageUrl = await uploadFile(
+          coverImage,
+          UploadTypes.COVER_IMAGE,
+          accessToken,
+        );
+      } else {
+        coverImageUrl = originalProfile.cover_image;
+      }
+      let uploadedDocs = normalizeDocuments(documents);
+      const localDocs = documents.filter(d => d && d.uri && isLocalFile(d));
+
+      if (localDocs.length > 0) {
+        uploadedDocs = await handleDocumentUploads(
+          documents,
+          UploadTypes.DOCUMENT,
+          accessToken,
+        );
+      }
+
+      let uploadedGallery = galleryImages;
+      if (galleryImages.some(isLocalFile)) {
+        uploadedGallery = await handleGalleryUploads(
+          galleryImages,
+          UploadTypes.GALLERY_IMAGE,
+          accessToken,
+        );
+      }
+
+      const updates = buildProfileUpdatePayload({
+        originalProfile,
+        profileData: {
+          name,
+          tagline,
+          namelocation,
+          bio,
+
+          birthYear,
+          selectedSkills,
+
+          keywords,
+
+          availability,
+          selectedLanguages,
+          phoneNumber,
+          email,
+          emergencyNumber,
+          upiId,
+          socialAccounts,
+          customLinks,
+          pickedLocation,
+          pickedAddress,
+        },
+        profileImageUrl,
+        coverImageUrl,
+        uploadedDocs,
+        uploadedGallery,
+      });
+
+      if (!Object.keys(updates).length) {
+        setAlertTitle('No Changes');
+        setAlertMessage('Your profile is already up to date.');
+        setAlertVisible(true);
+        return;
+      }
+
+      const res = await api.patch('/api/user/Bussprofileupdate', updates);
+
+      await saveProfileToCache(res.data);
+      await saveLastUpdatedToCache(res.data.updated_at);
+
+      setIsSuccess(true);
+      setIsDirty(false);
+
+      setAlertTitle('Success');
+      setAlertMessage('Profile updated successfully.');
+      setAlertVisible(true);
+    } catch {
+      setAlertTitle('Error');
+      setAlertMessage('Something went wrong. Please try again.');
+      setAlertVisible(true);
+    } finally {
+      savingRef.current = false;
+      setLoading(false);
+    }
+  }, [
+    accessToken,
+    originalProfile,
+    coverImage,
+    profileImage,
+    name,
+    tagline,
+    namelocation,
+    bio,
+    birthYear,
+    selectedSkills,
+    keywords,
+    availability,
+    selectedLanguages,
+    phoneNumber,
+    email,
+    emergencyNumber,
+    upiId,
+    socialAccounts,
+    customLinks,
+    pickedLocation,
+    pickedAddress,
+    documents,
+    galleryImages,
+  ]);
+
   return (
     <SafeAreaView style={styles.main}>
       <KeyboardAvoidingView
@@ -256,6 +523,33 @@ const Ebuss = () => {
             )}
           </TouchableOpacity>
         </View>
+        <ConfirmModal
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          onConfirm={() => {
+            setAlertVisible(false);
+            if (isSuccess) navigation.replace('Profile');
+          }}
+          onCancel={() => setAlertVisible(false)}
+        />
+        <ConfirmModal
+          visible={showUnsavedModal}
+          title="Unsaved Changes"
+          message="You have unsaved changes. Do you want to discard them?"
+          confirmText="discard"
+          onConfirm={() => {
+            setShowUnsavedModal(false);
+            if (pendingNavActionRef.current) {
+              navigation.dispatch(pendingNavActionRef.current);
+              pendingNavActionRef.current = null;
+            }
+          }}
+          onCancel={() => {
+            setShowUnsavedModal(false);
+            pendingNavActionRef.current = null;
+          }}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

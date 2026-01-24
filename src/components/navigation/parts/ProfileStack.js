@@ -15,6 +15,8 @@ import Eopen from '../../profile/parts/identity/Eparts/Eopen';
 import Ebuss from '../../profile/parts/identity/Eparts/Ebuss';
 import Eproff from '../../profile/parts/identity/Eparts/Eproff';
 import Eserv from '../../profile/parts/identity/Eparts/Eserv';
+import CreateEventScreen from '../../profile/parts/Eventmaster/screens/CreateEvent';
+import EventViewScreen from '../../profile/parts/Eventmaster/screens/EventViewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +38,9 @@ const ProfileStack = () => {
       <Stack.Screen name="Ebuss" component={Ebuss} />
       <Stack.Screen name="Eproff" component={Eproff} />
       <Stack.Screen name="Eserv" component={Eserv} />
+
+      <Stack.Screen name="CreateEventScreen" component={CreateEventScreen} />
+      <Stack.Screen name="EventViewScreen" component={EventViewScreen} />
     </Stack.Navigator>
   );
 };

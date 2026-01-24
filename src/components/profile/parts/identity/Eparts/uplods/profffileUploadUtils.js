@@ -81,7 +81,6 @@ export const uploadFile = async (file, type, accessToken) => {
 
   const res = await api.post(`/api/user/upload?type=${type}`, formData, {
     headers: {
-      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'multipart/form-data',
     },
   });
