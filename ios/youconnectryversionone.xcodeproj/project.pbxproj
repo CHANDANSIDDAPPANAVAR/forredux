@@ -43,6 +43,7 @@
 		5CD010EF90AF43519B2BE382 /* Roboto_SemiCondensed-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8F229886E675470187A52055 /* Roboto_SemiCondensed-Italic.ttf */; };
 		5D2135EF527C4A15BBD2F951 /* Roboto_SemiCondensed-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E136BFA361AA4F37A98806A9 /* Roboto_SemiCondensed-ExtraLightItalic.ttf */; };
 		69721133314F4B7D935C14B4 /* Poppins-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B01FAB102B348DFAA5F8CBD /* Poppins-ExtraLightItalic.ttf */; };
+		6C2A416D1AD7F73A9859B513 /* Pods_youconnectryversionone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 618CD46FD83B50B126F93F58 /* Pods_youconnectryversionone.framework */; };
 		6E8DE346CB94440EB6FCA46E /* Roboto-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 22361D02ADAD4A908C5BF829 /* Roboto-SemiBold.ttf */; };
 		711EC4441FC240E98AF87845 /* Poppins-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A15E6AEAA7B14FA5A7141E8A /* Poppins-MediumItalic.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
@@ -62,7 +63,6 @@
 		A8160207CE664D3AA4EF32CD /* Roboto-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 83B3B04A5C764B8A81E3308E /* Roboto-ExtraBold.ttf */; };
 		AAD2003F56934B49B52D5EE4 /* Poppins-BlackItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DCA9738C336C491F9F68D347 /* Poppins-BlackItalic.ttf */; };
 		AB714745161D4C7B832A5DF6 /* Poppins-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0ACF8C473DBC47C2BE76E8A9 /* Poppins-Regular.ttf */; };
-		AF76F45F26DC2C903962845C /* Pods_youconnectryversionone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1128FB6D4E6ECFF40AEFB736 /* Pods_youconnectryversionone.framework */; };
 		B148F5C68496478C82192E43 /* Roboto_SemiCondensed-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9A52BB1A0F46468DAEB440C6 /* Roboto_SemiCondensed-MediumItalic.ttf */; };
 		B2D1331BB24B4E2682E58F14 /* Roboto_SemiCondensed-BlackItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E8DD1720BE14B639E9AAE4B /* Roboto_SemiCondensed-BlackItalic.ttf */; };
 		B6808D0ACA7D4003BCE67561 /* Roboto-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E57905793F0437E8F920EE4 /* Roboto-ExtraLight.ttf */; };
@@ -90,15 +90,12 @@
 		0324915A0F7B444F8F008C75 /* Poppins-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Medium.ttf"; path = "../assets/fonts/Poppins-Medium.ttf"; sourceTree = "<group>"; };
 		039D8BC701A24851B5F9E8A9 /* Poppins-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-SemiBold.ttf"; path = "../assets/fonts/Poppins-SemiBold.ttf"; sourceTree = "<group>"; };
 		0645B92C76E14669B662447C /* Roboto_Condensed-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-ExtraLight.ttf"; path = "../assets/fonts/Roboto_Condensed-ExtraLight.ttf"; sourceTree = "<group>"; };
-		06F87AC09D3B28105C4D16E4 /* Pods-youconnectryversionone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-youconnectryversionone.release.xcconfig"; path = "Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone.release.xcconfig"; sourceTree = "<group>"; };
 		07B0490A2B4C4213AF3A22FA /* Roboto_SemiCondensed-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_SemiCondensed-Bold.ttf"; path = "../assets/fonts/Roboto_SemiCondensed-Bold.ttf"; sourceTree = "<group>"; };
 		0A1F6A8927334941B6640CA3 /* Poppins-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-ExtraBold.ttf"; path = "../assets/fonts/Poppins-ExtraBold.ttf"; sourceTree = "<group>"; };
 		0ACF8C473DBC47C2BE76E8A9 /* Poppins-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Regular.ttf"; path = "../assets/fonts/Poppins-Regular.ttf"; sourceTree = "<group>"; };
 		0F1C8D85F5584C3297C5F645 /* Roboto-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-MediumItalic.ttf"; path = "../assets/fonts/Roboto-MediumItalic.ttf"; sourceTree = "<group>"; };
-		1128FB6D4E6ECFF40AEFB736 /* Pods_youconnectryversionone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_youconnectryversionone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		12180BD9CD4B46E3B07A473F /* Roboto_Condensed-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-SemiBoldItalic.ttf"; path = "../assets/fonts/Roboto_Condensed-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		1252C1252A8A454292F03748 /* Poppins-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Light.ttf"; path = "../assets/fonts/Poppins-Light.ttf"; sourceTree = "<group>"; };
-		12BF5A01ED7B2705C55048EB /* Pods-youconnectryversionone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-youconnectryversionone.debug.xcconfig"; path = "Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* youconnectryversionone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = youconnectryversionone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = youconnectryversionone/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = youconnectryversionone/Info.plist; sourceTree = "<group>"; };
@@ -113,6 +110,7 @@
 		260F594086674B9A8C9E59E7 /* Roboto-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-LightItalic.ttf"; path = "../assets/fonts/Roboto-LightItalic.ttf"; sourceTree = "<group>"; };
 		29BDC90FE7724B718D6A607E /* Roboto-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Regular.ttf"; path = "../assets/fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; };
 		2C399A99868B403AAE534FCF /* Roboto_SemiCondensed-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_SemiCondensed-Thin.ttf"; path = "../assets/fonts/Roboto_SemiCondensed-Thin.ttf"; sourceTree = "<group>"; };
+		2EFF704C3B496AABAF277077 /* Pods-youconnectryversionone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-youconnectryversionone.release.xcconfig"; path = "Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone.release.xcconfig"; sourceTree = "<group>"; };
 		31E0C0EC71004D19A8ADF67F /* Roboto_Condensed-ThinItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-ThinItalic.ttf"; path = "../assets/fonts/Roboto_Condensed-ThinItalic.ttf"; sourceTree = "<group>"; };
 		378DDD2E1823480CA00843D5 /* Poppins-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Bold.ttf"; path = "../assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
 		37D44914442C4F83BA837DF8 /* Poppins-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-LightItalic.ttf"; path = "../assets/fonts/Poppins-LightItalic.ttf"; sourceTree = "<group>"; };
@@ -125,6 +123,7 @@
 		55817C71E936426A9BBA21D6 /* Roboto-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-Medium.ttf"; path = "../assets/fonts/Roboto-Medium.ttf"; sourceTree = "<group>"; };
 		55ACCE10454A49329D752711 /* Roboto-BlackItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-BlackItalic.ttf"; path = "../assets/fonts/Roboto-BlackItalic.ttf"; sourceTree = "<group>"; };
 		6050C95AE8034C209235ADB5 /* Roboto_Condensed-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-Thin.ttf"; path = "../assets/fonts/Roboto_Condensed-Thin.ttf"; sourceTree = "<group>"; };
+		618CD46FD83B50B126F93F58 /* Pods_youconnectryversionone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_youconnectryversionone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B577BD683FF429782B0BF3F /* Roboto_SemiCondensed-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_SemiCondensed-ExtraBoldItalic.ttf"; path = "../assets/fonts/Roboto_SemiCondensed-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		72AD6DF1402C441EA8D3A796 /* Roboto-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto-ExtraLightItalic.ttf"; path = "../assets/fonts/Roboto-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = youconnectryversionone/AppDelegate.swift; sourceTree = "<group>"; };
@@ -148,6 +147,7 @@
 		A3AEA36EB0274840B684E5DC /* Roboto_SemiCondensed-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_SemiCondensed-Light.ttf"; path = "../assets/fonts/Roboto_SemiCondensed-Light.ttf"; sourceTree = "<group>"; };
 		A3C5A5EFE89341ABBC7806BB /* Roboto_Condensed-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-Medium.ttf"; path = "../assets/fonts/Roboto_Condensed-Medium.ttf"; sourceTree = "<group>"; };
 		AA5E990E480540CBA9D55646 /* Roboto_Condensed-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-Black.ttf"; path = "../assets/fonts/Roboto_Condensed-Black.ttf"; sourceTree = "<group>"; };
+		AD1BDF4C95AB5599331E41FE /* Pods-youconnectryversionone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-youconnectryversionone.debug.xcconfig"; path = "Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone.debug.xcconfig"; sourceTree = "<group>"; };
 		AD2FE09E2D6748F68CD994DC /* Poppins-ThinItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-ThinItalic.ttf"; path = "../assets/fonts/Poppins-ThinItalic.ttf"; sourceTree = "<group>"; };
 		B16D7443A1434A9DA5A8A901 /* Roboto_Condensed-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-MediumItalic.ttf"; path = "../assets/fonts/Roboto_Condensed-MediumItalic.ttf"; sourceTree = "<group>"; };
 		B17EAC0AB3C94CC48AE31B43 /* Roboto_Condensed-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Roboto_Condensed-Italic.ttf"; path = "../assets/fonts/Roboto_Condensed-Italic.ttf"; sourceTree = "<group>"; };
@@ -177,7 +177,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF76F45F26DC2C903962845C /* Pods_youconnectryversionone.framework in Frameworks */,
+				6C2A416D1AD7F73A9859B513 /* Pods_youconnectryversionone.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,7 +201,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				1128FB6D4E6ECFF40AEFB736 /* Pods_youconnectryversionone.framework */,
+				618CD46FD83B50B126F93F58 /* Pods_youconnectryversionone.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -318,8 +318,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				12BF5A01ED7B2705C55048EB /* Pods-youconnectryversionone.debug.xcconfig */,
-				06F87AC09D3B28105C4D16E4 /* Pods-youconnectryversionone.release.xcconfig */,
+				AD1BDF4C95AB5599331E41FE /* Pods-youconnectryversionone.debug.xcconfig */,
+				2EFF704C3B496AABAF277077 /* Pods-youconnectryversionone.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -331,13 +331,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "youconnectryversionone" */;
 			buildPhases = (
-				58755374AC738A0F7B30C436 /* [CP] Check Pods Manifest.lock */,
+				2DE8FEE40866091F73B0ADD0 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				569609B886601E6B76247874 /* [CP] Copy Pods Resources */,
-				E6C1055666544990361331A5 /* [CP] Embed Pods Frameworks */,
+				F3B74FEBC7FBA0BFA94DC394 /* [CP] Embed Pods Frameworks */,
+				EB5090FFD2287F4A8C6F1F6C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -481,24 +481,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"\\\"$WITH_ENVIRONMENT\\\" \\\"$REACT_NATIVE_XCODE\\\"\"\n";
 		};
-		569609B886601E6B76247874 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		58755374AC738A0F7B30C436 /* [CP] Check Pods Manifest.lock */ = {
+		2DE8FEE40866091F73B0ADD0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -520,7 +503,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E6C1055666544990361331A5 /* [CP] Embed Pods Frameworks */ = {
+		EB5090FFD2287F4A8C6F1F6C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-youconnectryversionone/Pods-youconnectryversionone-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F3B74FEBC7FBA0BFA94DC394 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -553,7 +553,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 12BF5A01ED7B2705C55048EB /* Pods-youconnectryversionone.debug.xcconfig */;
+			baseConfigurationReference = AD1BDF4C95AB5599331E41FE /* Pods-youconnectryversionone.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -583,7 +583,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 06F87AC09D3B28105C4D16E4 /* Pods-youconnectryversionone.release.xcconfig */;
+			baseConfigurationReference = 2EFF704C3B496AABAF277077 /* Pods-youconnectryversionone.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

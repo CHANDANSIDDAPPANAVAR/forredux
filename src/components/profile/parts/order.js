@@ -1,11 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import LocationStatusScreen from '../../location/LocationStatusScreen';
 
 const Order = () => {
-  return (
-    <View>
-      <Text>Order</Text>
-    </View>
-  );
+  return <LocationStatusScreen />;
 };
 export default Order;

@@ -1,6 +1,6 @@
 // Connects/ConnectsHome.js
-import React, { useState, useEffect } from 'react';
-import { View, BackHandler } from 'react-native';
+import React, { useState } from 'react';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Buss from './components/screens/Buss';
 import Proff from './components/screens/Proff';

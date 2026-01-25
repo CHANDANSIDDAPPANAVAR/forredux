@@ -10,6 +10,7 @@ import RootNavigator from './src/components/navigation/RootNavigator';
 import { store } from './src/store';
 import { validateAuthThunk } from './src/store/auth/authValidateThunk';
 import ToastMessage from './src/components/util/alerts/ToastMessage';
+import LocationTracker from './src/components/location/LocationTracker';
 /* 🔁 Runs once on app start */
 function Bootstrapper({ children }) {
   const dispatch = useDispatch();
@@ -39,6 +40,7 @@ function App() {
           />
 
           <NavigationContainer ref={navigationRef}>
+            <LocationTracker />
             <ToastMessage />
             <RootNavigator />
           </NavigationContainer>

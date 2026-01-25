@@ -36,7 +36,7 @@ const BottomNav = ({ state, navigation }) => {
 
   // 🚫 Hide tab bar on Blink
   if (currentRoute === 'BlinkTab') return null;
-
+  if (currentRoute === 'DiscoverTab') return null;
   return (
     <SafeAreaView edges={['bottom']} style={styles.mainbutnav}>
       <View style={styles.subminbutnav}>

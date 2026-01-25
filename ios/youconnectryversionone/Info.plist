@@ -41,10 +41,16 @@
 	<string>This app needs camera access to scan QR codes and capture images</string>
 	<key>NSDocumentsFolderUsageDescription</key>
 	<string>This app needs access to select documents</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Your location is used to select places on the map</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to select places on the map</string>
+<string>This app uses your location to show nearby users and places on the map.</string>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app uses your location even when the app is in background.</string>
+
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs background location updates.</string>
+
+
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access for video and audio features</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -156,7 +162,11 @@
 </array>
 
 	<key>UIBackgroundModes</key>
-	<array/>
+<array>
+  <string>location</string>
+  <string>fetch</string>
+</array>
+
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
